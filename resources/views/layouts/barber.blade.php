@@ -1,6 +1,6 @@
 @props([
     'title' => config('app.name', 'Laravel'),
-    'breadcrumbs' => [], //arreglo vacio por defecto
+    'breadcrumbs' => [],
 ])
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -26,19 +26,17 @@
     <!-- WireUI -->
     <wireui:scripts />
 
+    <!-- FullCalendar -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+
     <!-- Styles -->
     @livewireStyles
 </head>
 
 <body class="font-sans antialiased bg-gray-50">
 
-
-
-    @include('layouts.includes.admin.navigation')
-    @include('layouts.includes.admin.sidebar')
-
-
-
+    @include('layouts.includes.barber.navigation')
+    @include('layouts.includes.barber.sidebar')
 
     <div class="p-4 sm:ml-64 mt-14">
         <div class="mt-14 flex justify-between items-center w-full">
@@ -52,7 +50,6 @@
         {{ $slot }}
     </div>
 
-
     @stack('modals')
     {{-- Mostrar Sweet Alert --}}
     @if (session('swal'))
@@ -65,7 +62,6 @@
 
     @yield('content')
     <script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
-
 
 </body>
 

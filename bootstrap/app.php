@@ -18,10 +18,19 @@ return Application::configure(basePath: dirname(__DIR__))
             ->prefix('admin')
             ->name('admin.')
             ->group(base_path('routes/admin.php'));
+
+            Route::middleware(['web', 'auth', 'role:Barbero'])
+            ->prefix('barber')
+            ->name('barber.')
+            ->group(base_path('routes/barber.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
