@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
-
 use App\Http\Controllers\Admin\BarberController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\ScheduleController;
@@ -22,10 +21,10 @@ Route::get('/', function () {
 })->name('dashboard');
 
 // Gestion de roles
-Route::resource('roles',RoleController::class);
+Route::resource('roles', RoleController::class);
 
 // Gestion de usuarios
-Route::resource('users',UserController::class);
+Route::resource('users', UserController::class);
 
 // Gestion de barberos
 Route::resource('barbers', BarberController::class);
