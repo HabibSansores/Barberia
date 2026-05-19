@@ -10,27 +10,16 @@
             'header' => 'Administración',
         ],
         [
-            'name' => 'Tienda en linea',
-            'icon' => 'fa-solid fa-user-group',
-            'href' => '#', // Cambiado a '#' para que no redireccione si tiene submenú
-            'active' => request()->routeIs('admin.tienda.*'), // Ajusta según tus rutas
-            'submenu' => [
-                [
-                    'name' => 'Productos',
-                    'href' => '#',
-                    'active' => false,
-                ],
-                [
-                    'name' => 'Categoria',
-                    'href' => '#',
-                    'active' => false,
-                ],
-                [
-                    'name' => 'Pedidos',
-                    'href' => '#',
-                    'active' => false,
-                ],
-            ],
+            'name' => 'Roles y permisos',
+            'icon' => 'fa-solid fa-shield-halved',
+            'href' => route('admin.roles.index'),
+            'active' => request()->routeIs('admin.roles.*'),
+        ],
+        [
+            'name' => 'Usuarios',
+            'icon' => 'fa-solid fa-users',
+            'href' => route('admin.users.index'),
+            'active' => request()->routeIs('admin.users.*'),
         ],
     ];
 @endphp
@@ -40,8 +29,8 @@
     aria-label="Sidebar">
     <div class="h-full px-3 py-4 overflow-y-auto bg-neutral-primary-soft border-e border-default">
         <a href="/" class="flex items-center ps-2.5 mb-5">
-            <img src="{{ asset('images/ejemplo1.png') }}" class="h-6 me-3" alt="Logo" />
-            <span class="self-center text-lg text-heading font-semibold whitespace-nowrap">BarberShop</span>
+            <img src="{{ asset('images/ejemplo.jpg') }}" class="h-6 me-3" alt="Logo" />
+            <span class="self-center text-lg text-heading font-semibold whitespace-nowrap">Healthify</span>
         </a>
         <ul class="space-y-2 font-medium">
             @foreach ($links as $link)

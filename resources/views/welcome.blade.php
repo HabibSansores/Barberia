@@ -13,6 +13,10 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+
     <style>
         body{
             font-family: 'Poppins', sans-serif;
@@ -306,7 +310,14 @@
             </div>
 
 
-            <form class="bg-[#181818] p-10 rounded-2xl border border-gray-800 space-y-6">
+            <form method="POST" action="{{ route('citas.store') }}" class="bg-[#181818] p-10 rounded-2xl border border-gray-800 space-y-6">
+                @csrf
+
+                @if(session('success'))
+                    <div class="bg-green-900/50 border border-green-500 text-green-200 px-4 py-3 rounded-lg text-center" role="alert">
+                        <span>{{ session('success') }}</span>
+                    </div>
+                @endif
 
                 <div class="grid md:grid-cols-2 gap-6">
 
@@ -314,9 +325,8 @@
                         <label class="block mb-2 text-sm text-gray-400">
                             Nombre
                         </label>
-
-                        <input type="text"
-                               class="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-500">
+                        <input type="text" name="nombre_cliente" required
+                               class="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-500 text-white">
                     </div>
 
 
@@ -324,49 +334,46 @@
                         <label class="block mb-2 text-sm text-gray-400">
                             Teléfono
                         </label>
-
-                        <input type="text"
-                               class="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-500">
+                        <input type="text" name="telefono" required placeholder="Ej: 6671234567"
+                               class="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-500 text-white">
                     </div>
 
                 </div>
 
+                <div>
+                    <label class="block mb-2 text-sm text-gray-400">
+                        Correo Electrónico (Para recibir ticket PDF)
+                    </label>
+                    <input type="email" name="email" placeholder="Ej: cliente@correo.com"
+                           class="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-500 text-white">
+                </div>
 
                 <div class="grid md:grid-cols-2 gap-6">
-
                     <div>
                         <label class="block mb-2 text-sm text-gray-400">
                             Servicio
                         </label>
-
-                        <select class="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-500">
-
-                            <option>Corte Clásico</option>
-                            <option>Fade Premium</option>
-                            <option>Barba</option>
-                            <option>Corte + Barba</option>
-
+                        <select name="servicio" required
+                                class="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-500 text-white bg-black">
+                            <option value="Corte Clásico">Corte Clásico ($120)</option>
+                            <option value="Fade Premium">Fade Premium ($180)</option>
+                            <option value="Barba">Barba ($80)</option>
+                            <option value="Corte + Barba">Corte + Barba ($220)</option>
                         </select>
                     </div>
-
 
                     <div>
                         <label class="block mb-2 text-sm text-gray-400">
                             Barbero
                         </label>
-
-                        <select class="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-500">
-
-                            <option>Juan Pérez</option>
-                            <option>Carlos Díaz</option>
-                            <option>Miguel Torres</option>
-
+                        <select name="barbero" required
+                                class="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-500 text-white bg-black">
+                            <option value="Juan Pérez">Juan Pérez (Especialista en Fades)</option>
+                            <option value="Carlos Díaz">Carlos Díaz (Barba y Estilo Clásico)</option>
+                            <option value="Miguel Torres">Miguel Torres (Diseños y Freestyle)</option>
                         </select>
                     </div>
-
                 </div>
-
-
 
                 <div class="grid md:grid-cols-2 gap-6">
 
@@ -374,9 +381,8 @@
                         <label class="block mb-2 text-sm text-gray-400">
                             Fecha
                         </label>
-
-                        <input type="date"
-                               class="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-500">
+                        <input type="text" name="fecha" id="fecha" required placeholder="Selecciona una fecha"
+                               class="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-500 text-white bg-black">
                     </div>
 
 
@@ -384,19 +390,17 @@
                         <label class="block mb-2 text-sm text-gray-400">
                             Hora
                         </label>
-
-                        <input type="time"
-                               class="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-500">
+                        <select name="hora" id="hora" required disabled
+                                class="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-500 text-white disabled:opacity-50">
+                            <option value="">Seleccione una fecha primero</option>
+                        </select>
                     </div>
 
                 </div>
 
-
                 <button type="submit"
                         class="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-4 rounded-xl transition">
-
                     Confirmar Cita
-
                 </button>
 
             </form>
@@ -509,6 +513,75 @@
         </div>
 
     </footer>
+
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateInput = document.getElementById('fecha');
+            const timeSelect = document.getElementById('hora');
+
+            // Inicializar Flatpickr con tema oscuro y español
+            flatpickr(dateInput, {
+                locale: 'es',
+                dateFormat: 'Y-m-d',
+                minDate: 'today',
+                disable: [
+                    function(date) {
+                        // Deshabilitar los Domingos (0 es Domingo)
+                        return (date.getDay() === 0);
+                    }
+                ],
+                onChange: function(selectedDates, dateStr) {
+                    if (dateStr) {
+                        // Limpiar y deshabilitar temporalmente el select
+                        timeSelect.innerHTML = '<option value="">Cargando horas...</option>';
+                        timeSelect.disabled = true;
+
+                        // Hacer petición AJAX para obtener horas disponibles
+                        fetch(`/citas/horas-disponibles?fecha=${dateStr}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                timeSelect.innerHTML = '';
+                                if (data.length > 0) {
+                                    timeSelect.disabled = false;
+                                    
+                                    const placeholderOpt = document.createElement('option');
+                                    placeholderOpt.value = '';
+                                    placeholderOpt.textContent = 'Seleccione una hora';
+                                    timeSelect.appendChild(placeholderOpt);
+
+                                    data.forEach(hora => {
+                                        const option = document.createElement('option');
+                                        option.value = hora;
+                                        
+                                        // Formatear hora de 24h a 12h para mostrarla bonita
+                                        const [h, m] = hora.split(':');
+                                        const hourNum = parseInt(h);
+                                        const ampm = hourNum >= 12 ? 'PM' : 'AM';
+                                        const displayHour = hourNum % 12 || 12;
+                                        option.textContent = `${displayHour}:${m} ${ampm}`;
+                                        timeSelect.appendChild(option);
+                                    });
+                                } else {
+                                    timeSelect.innerHTML = '<option value="">No hay horas disponibles para este día</option>';
+                                    timeSelect.disabled = true;
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error cargando horas:', error);
+                                timeSelect.innerHTML = '<option value="">Error al cargar horas</option>';
+                                timeSelect.disabled = true;
+                            });
+                    } else {
+                        timeSelect.innerHTML = '<option value="">Seleccione una fecha primero</option>';
+                        timeSelect.disabled = true;
+                    }
+                }
+            });
+        });
+    </script>
 
 </body>
 </html>
