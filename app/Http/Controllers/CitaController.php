@@ -11,7 +11,7 @@ class CitaController extends Controller
         return view('citas.create');
     }
 
-    public function store(Request $request, \App\Services\GreenApiService $greenApi)
+    public function store(Request $request)
     {
         $request->validate([
             'nombre_cliente' => 'required|string|max:255',
@@ -34,9 +34,14 @@ class CitaController extends Controller
             'estado' => 'Pendiente',
         ]);
 
-        // 1. Enviar mensaje por WhatsApp (si está configurado)
+        // 1. Generar enlace de WhatsApp (Click to Chat)
         $mensaje = "Hola {$cita->nombre_cliente}, tu cita para {$cita->servicio} con {$cita->barbero} el {$cita->fecha} a las {$cita->hora} ha sido registrada exitosamente en la Barbería. ¡Te esperamos!";
-        $greenApi->sendMessage($cita->telefono, $mensaje);
+        
+        $phone = preg_replace('/[^0-9]/', '', $cita->telefono);
+        if (strlen($phone) === 10) {
+            $phone = '521' . $phone; // Asumir prefijo de México si tiene 10 dígitos
+        }
+        $whatsappUrl = "https://wa.me/{$phone}?text=" . urlencode($mensaje);
 
         // 2. Enviar correo electrónico con PDF si se proporcionó correo
         $emailStatus = '';
@@ -56,7 +61,10 @@ class CitaController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', 'Cita registrada con éxito' . $emailStatus . '.');
+        return redirect()->back()->with([
+            'success' => 'Cita registrada con éxito' . $emailStatus . '.',
+            'whatsapp_url' => $whatsappUrl
+        ]);
     }
 
     public function horasDisponibles(Request $request)
