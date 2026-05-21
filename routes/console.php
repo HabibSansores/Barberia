@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\EnviarRecordatoriosCitas;
+use App\Console\Commands\EnviarReportesDiarios;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -11,12 +12,20 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 // ── TASK SCHEDULING ──────────────────────────────────────────────────────────
-// Envía recordatorios de citas automáticamente todos los días a las 8:00 AM.
-// Los clientes con citas programadas para el día siguiente recibirán un correo.
+
+// 1. Envía recordatorios a los clientes 24 horas antes de su cita (se ejecuta cada hora)
 Schedule::command(EnviarRecordatoriosCitas::class)
-    ->dailyAt('08:00')
+    ->hourly()
     ->timezone('America/Merida')
     ->withoutOverlapping()
     ->runInBackground()
     ->appendOutputTo(storage_path('logs/recordatorios-citas.log'));
+
+// 2. Envía la agenda diaria en PDF a barberos y admins todos los días a las 7:00 AM
+Schedule::command(EnviarReportesDiarios::class)
+    ->dailyAt('16:03')
+    ->timezone('America/Merida')
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->appendOutputTo(storage_path('logs/reportes-diarios.log'));
 

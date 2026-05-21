@@ -35,8 +35,6 @@ class UserFactory extends Factory
             'profile_photo_path' => null,
             'current_team_id' => null,
             'phone' => fake()->phoneNumber(),
-            'id_number' => fake()->numerify('##########'),
-            'address' => fake()->address(),
         ];
     }
 

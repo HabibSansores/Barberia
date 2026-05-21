@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
@@ -18,9 +17,7 @@ class UserSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'habibsansorespersonal@gmail.com',
             'password' => bcrypt('12345678'),
-            'id_number' => '123456789',
             'phone' => '9999999999',
-            'address' => 'Test Address',
-        ]) ->assignRole('Administrador');
+        ])->assignRole('Administrador');
     }
 }
