@@ -38,7 +38,15 @@ class CitaController extends Controller
             }
         }
 
+        // Buscar IDs de relaciones de forma dinámica para la normalización híbrida
+        $clienteId = auth()->check() ? auth()->id() : (\App\Models\User::where('email', $request->email)->first()?->id);
+        $barberId = \App\Models\User::role('Barbero')->where('name', $request->barbero)->first()?->id;
+        $serviceId = \App\Models\Service::where('name', $request->servicio)->first()?->id;
+
         $cita = \App\Models\Cita::create([
+            'cliente_id' => $clienteId,
+            'barber_id' => $barberId,
+            'service_id' => $serviceId,
             'nombre_cliente' => $request->nombre_cliente,
             'telefono' => $request->telefono,
             'email' => $request->email,

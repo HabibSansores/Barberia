@@ -10,6 +10,9 @@ class Cita extends Model
     use SoftDeletes;
 
     protected $fillable = [
+        'cliente_id',
+        'barber_id',
+        'service_id',
         'nombre_cliente',
         'telefono',
         'email',
@@ -22,4 +25,20 @@ class Cita extends Model
     ];
 
     protected $dates = ['deleted_at'];
+
+    public function client()
+    {
+        return $this->belongsTo(User::class, 'cliente_id');
+    }
+
+    public function barber()
+    {
+        return $this->belongsTo(User::class, 'barber_id');
+    }
+
+    public function service()
+    {
+        return $this->belongsTo(Service::class, 'service_id');
+    }
 }
+

@@ -63,6 +63,9 @@ erDiagram
 
     CITAS {
         bigint id PK
+        bigint cliente_id FK
+        bigint barber_id FK
+        bigint service_id FK
         string nombre_cliente
         string telefono
         string email
@@ -95,6 +98,10 @@ erDiagram
     USERS ||--o| BARBEROS : "puede ser"
     USERS ||--o{ MODEL_HAS_ROLES : "posee"
     ROLES ||--o{ MODEL_HAS_ROLES : "se asigna en"
+    USERS ||--o{ CITAS : "reserva"
+    USERS ||--o{ CITAS : "atiende"
+    SERVICES ||--o{ CITAS : "incluye"
+
     
 ```
 
