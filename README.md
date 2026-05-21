@@ -56,9 +56,9 @@ erDiagram
     }
 
     MODEL_HAS_ROLES {
-        bigint role_id PK, FK
+        bigint role_id PK FK
         string model_type PK
-        bigint model_id PK, FK
+        bigint model_id PK FK
     }
 
     CITAS {
@@ -95,6 +95,7 @@ erDiagram
     USERS ||--o| BARBEROS : "puede ser"
     USERS ||--o{ MODEL_HAS_ROLES : "posee"
     ROLES ||--o{ MODEL_HAS_ROLES : "se asigna en"
+    
 ```
 
 ---
