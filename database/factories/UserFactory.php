@@ -21,8 +21,6 @@ class UserFactory extends Factory
 
     /**
      * Define the model's default state.
-     *
-     * @return array<string, mixed>
      */
     public function definition(): array
     {
@@ -36,6 +34,9 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'profile_photo_path' => null,
             'current_team_id' => null,
+            'phone' => fake()->phoneNumber(),
+            'id_number' => fake()->numerify('##########'),
+            'address' => fake()->address(),
         ];
     }
 

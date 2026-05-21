@@ -14,6 +14,7 @@ class ServiceTable extends DataTableComponent
     public function configure(): void
     {
         $this->setPrimaryKey('id');
+        $this->setColumnSelectStatus(false);
     }
 
     public function columns(): array
@@ -27,8 +28,6 @@ class ServiceTable extends DataTableComponent
             Column::make("Precio", "price")
                 ->sortable()
                 ->format(fn($value) => '$' . number_format($value, 2)),
-            Column::make("Duración (min)", "duration_minutes")
-                ->sortable(),
             Column::make("Acciones")
                 ->label(function($row) {
                     return view('admin.services.actions', ['service' => $row]);

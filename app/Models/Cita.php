@@ -17,7 +17,8 @@ class Cita extends Model
         'barbero',
         'fecha',
         'hora',
-        'estado'
+        'estado',
+        'motivo_cancelacion'
     ];
 
     protected $dates = ['deleted_at'];

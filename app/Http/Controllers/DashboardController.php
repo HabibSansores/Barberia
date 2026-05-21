@@ -28,12 +28,34 @@ class DashboardController extends Controller
 
             $services = Service::all();
 
-            // Citas de hoy para el barbero
+            // Citas de hoy para el barbero (ordenadas por prioridad de estado y luego por hora)
             $today = date('Y-m-d');
             $citas = Cita::where('barbero', $user->name)
                          ->where('fecha', $today)
-                         ->orderBy('hora', 'asc')
-                         ->get();
+                         ->get()
+                         ->sort(function ($a, $b) {
+                             $estadoA = strtolower($a->estado);
+                             $estadoB = strtolower($b->estado);
+
+                             $weightA = match(true) {
+                                 in_array($estadoA, ['pendiente', 'confirmada']) => 1,
+                                 $estadoA === 'completada' => 2,
+                                 $estadoA === 'cancelada' => 3,
+                                 default => 4
+                             };
+                             $weightB = match(true) {
+                                 in_array($estadoB, ['pendiente', 'confirmada']) => 1,
+                                 $estadoB === 'completada' => 2,
+                                 $estadoB === 'cancelada' => 3,
+                                 default => 4
+                             };
+
+                             if ($weightA !== $weightB) {
+                                 return $weightA <=> $weightB;
+                             }
+
+                             return $a->hora <=> $b->hora;
+                         });
 
             // HISTORIAL: todas las citas del barbero
             $todasLasCitas = Cita::where('barbero', $user->name)
@@ -105,8 +127,31 @@ class DashboardController extends Controller
         $user = Auth::user();
         $citas = Cita::where('barbero', $user->name)
                      ->where('fecha', $fecha)
-                     ->orderBy('hora', 'asc')
-                     ->get();
+                     ->get()
+                     ->sort(function ($a, $b) {
+                         $estadoA = strtolower($a->estado);
+                         $estadoB = strtolower($b->estado);
+
+                         $weightA = match(true) {
+                             in_array($estadoA, ['pendiente', 'confirmada']) => 1,
+                             $estadoA === 'completada' => 2,
+                             $estadoA === 'cancelada' => 3,
+                             default => 4
+                         };
+                         $weightB = match(true) {
+                             in_array($estadoB, ['pendiente', 'confirmada']) => 1,
+                             $estadoB === 'completada' => 2,
+                             $estadoB === 'cancelada' => 3,
+                             default => 4
+                         };
+
+                         if ($weightA !== $weightB) {
+                             return $weightA <=> $weightB;
+                         }
+
+                         return $a->hora <=> $b->hora;
+                     })
+                     ->values();
 
         return response()->json($citas);
     }

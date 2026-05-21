@@ -11,12 +11,23 @@ class AppointmentTable extends DataTableComponent
 {
     public function builder(): Builder
     {
-        return Cita::query()->latest('fecha');
+        return Cita::query()
+            ->orderByRaw("
+                CASE 
+                    WHEN estado IN ('Pendiente', 'pendiente', 'Confirmada', 'confirmada') THEN 1
+                    WHEN estado IN ('Completada', 'completada') THEN 2
+                    WHEN estado IN ('Cancelada', 'cancelada') THEN 3
+                    ELSE 4
+                END ASC
+            ")
+            ->orderBy('fecha', 'desc')
+            ->orderBy('hora', 'asc');
     }
 
     public function configure(): void
     {
         $this->setPrimaryKey('id');
+        $this->setColumnSelectStatus(false);
     }
 
     public function columns(): array
@@ -41,18 +52,15 @@ class AppointmentTable extends DataTableComponent
 
             Column::make('Fecha', 'fecha')
                 ->sortable()
-                ->label(fn ($row) => \Carbon\Carbon::parse($row->fecha)->format('d/m/Y')),
+                ->format(fn ($value) => \Carbon\Carbon::parse($value)->format('d/m/Y')),
 
             Column::make('Hora', 'hora')
                 ->sortable()
-                ->label(fn ($row) => \Carbon\Carbon::parse($row->hora)->format('g:i A')),
+                ->format(fn ($value) => \Carbon\Carbon::parse($value)->format('g:i A')),
 
             Column::make('Estado', 'estado')
                 ->sortable()
-                ->label(fn ($row) => view('admin.appointments.status', ['appointment' => $row])),
-
-            Column::make('Acciones')
-                ->label(fn ($row) => view('admin.appointments.actions', ['appointment' => $row])),
+                ->format(fn ($value, $row) => view('admin.appointments.status', ['appointment' => $row])),
         ];
     }
 }

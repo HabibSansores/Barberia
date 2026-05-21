@@ -13,9 +13,9 @@
                         </span>
                     @endunless
                     {{-- Revisa si existe una llave/propiedad llamada 'href' --}}
-                    @isset($link['href'])
-                        {{-- Si existe se meustra como enlace --}}
-                        <a href="{{ $item['href'] }}" class"opacity-60 hover:opacity-100 trnasition>
+                    @isset($item['href'])
+                        {{-- Si existe se muestra como enlace --}}
+                        <a href="{{ $item['href'] }}" class="opacity-60 hover:opacity-100 transition">
                             {{ $item['name'] }}
                         </a>
                     @else

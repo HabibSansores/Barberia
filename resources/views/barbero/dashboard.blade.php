@@ -12,6 +12,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
     
+    <!-- FullCalendar CSS/JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/locales/es.global.min.js"></script>
+    
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -22,6 +26,93 @@
         .active-tab {
             border-bottom: 2px solid #eab308; /* yellow-500 */
             color: #eab308;
+        }
+        /* Custom FullCalendar luxurious dark mode styling */
+        .fc {
+            background-color: #121212 !important;
+            border: 1px solid #1f2937 !important;
+            border-radius: 16px !important;
+            padding: 20px !important;
+            color: #ffffff !important;
+            font-family: 'Poppins', sans-serif !important;
+        }
+        .fc-theme-standard td, .fc-theme-standard th {
+            border: 1px solid #1f2937 !important;
+        }
+        .fc-header-toolbar {
+            margin-bottom: 20px !important;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: space-between;
+        }
+        .fc-toolbar-title {
+            font-size: 1.25rem !important;
+            font-weight: 700 !important;
+            color: #eab308 !important;
+        }
+        .fc-button-primary {
+            background-color: #181818 !important;
+            border: 1px solid #374151 !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+            border-radius: 8px !important;
+            text-transform: capitalize !important;
+        }
+        .fc-button-primary:hover {
+            background-color: #222222 !important;
+            border-color: #4b5563 !important;
+            color: #ffffff !important;
+        }
+        .fc-button-active, .fc-button-primary:not(:disabled).fc-button-active {
+            background-color: #eab308 !important;
+            border-color: #eab308 !important;
+            color: #000000 !important;
+            font-weight: bold !important;
+        }
+        .fc-day-today {
+            background-color: rgba(234, 179, 8, 0.05) !important;
+        }
+        .fc-col-header-cell {
+            background-color: #181818 !important;
+            padding: 10px 0 !important;
+            color: #e2e8f0 !important;
+        }
+        .fc-event {
+            border-radius: 6px !important;
+            padding: 3px 6px !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            border: none !important;
+            transition: transform 0.15s ease !important;
+        }
+        .fc-event:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+        .fc-daygrid-day-number {
+            color: #e2e8f0 !important;
+            font-weight: 500 !important;
+            padding: 4px 8px !important;
+            font-size: 12px !important;
+        }
+        .fc-daygrid-day:hover {
+            background-color: rgba(255, 255, 255, 0.01) !important;
+        }
+        .fc-timegrid-slot {
+            height: 40px !important;
+            color: #a0aec0 !important;
+            font-size: 12px !important;
+        }
+        .fc-timegrid-slot-label-cushion {
+            text-transform: uppercase !important;
+        }
+        .fc-timegrid-axis-frame {
+            color: #a0aec0 !important;
+        }
+        .fc-theme-standard .fc-scrollgrid {
+            border: 1px solid #1f2937 !important;
         }
     </style>
 </head>
@@ -38,6 +129,7 @@
                 <button onclick="switchTab('inicio')" id="tab-inicio" class="tab-btn py-1 hover:text-yellow-500 transition active-tab">Inicio</button>
                 <button onclick="switchTab('servicios')" id="tab-servicios" class="tab-btn py-1 hover:text-yellow-500 transition">Servicios</button>
                 <button onclick="switchTab('citas')" id="tab-citas" class="tab-btn py-1 hover:text-yellow-500 transition">Citas</button>
+                <button onclick="switchTab('calendario')" id="tab-calendario" class="tab-btn py-1 hover:text-yellow-500 transition">Calendario</button>
                 <button onclick="switchTab('historial')" id="tab-historial" class="tab-btn py-1 hover:text-yellow-500 transition">Historial</button>
                 <button onclick="switchTab('perfil')" id="tab-perfil" class="tab-btn py-1 hover:text-yellow-500 transition">Perfil</button>
             </div>
@@ -300,7 +392,7 @@
                         <!-- Se carga vía AJAX/DOM o Laravel inicialmente -->
                         @if($citas->count() > 0)
                             @foreach($citas as $cita)
-                                <div class="bg-black border border-gray-800 p-4 rounded-xl flex justify-between items-center hover:border-yellow-500/30 transition">
+                                <div class="bg-black border border-gray-800 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-yellow-500/30 transition">
                                     <div class="space-y-1">
                                         <div class="flex items-center gap-2">
                                             <span class="bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 text-xs px-2 py-0.5 rounded font-mono">
@@ -311,10 +403,23 @@
                                         <p class="text-xs text-gray-400">Servicio: <span class="text-gray-300">{{ $cita->servicio }}</span></p>
                                         <p class="text-xs text-gray-400">Teléfono: <span class="text-gray-300">{{ $cita->telefono }}</span></p>
                                     </div>
-                                    <div>
+                                    <div class="flex flex-col sm:flex-row items-end sm:items-center gap-3">
                                         <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">
                                             {{ $cita->estado }}
                                         </span>
+                                        @if(in_array(strtolower($cita->estado), ['pendiente', 'confirmada']))
+                                            <div class="flex items-center gap-1.5 mt-2 sm:mt-0">
+                                                <button type="button" onclick="completarCita({{ $cita->id }})" class="bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 text-green-400 text-xs px-2.5 py-1.5 rounded-lg font-bold transition hover:scale-105 active:scale-[0.98]" title="Cliente llegó (Completada)">
+                                                    Llegó
+                                                </button>
+                                                <button type="button" onclick="reagendarCita({{ $cita->id }}, '{{ $cita->fecha }}')" class="bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-400 text-xs px-2.5 py-1.5 rounded-lg font-bold transition hover:scale-105 active:scale-[0.98]" title="Reagendar cita">
+                                                    Reagendar
+                                                </button>
+                                                <button type="button" onclick="cancelarCitaBarbero({{ $cita->id }})" class="bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 text-red-400 text-xs px-2.5 py-1.5 rounded-lg font-bold transition hover:scale-105 active:scale-[0.98]" title="Cancelar cita">
+                                                    Cancelar
+                                                </button>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
@@ -326,6 +431,20 @@
                         @endif
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <!-- TAB: CALENDARIO (FullCalendar) -->
+        <section id="content-calendario" class="tab-content hidden space-y-6">
+            <div class="bg-[#181818] border border-gray-800 p-6 rounded-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-yellow-500 flex items-center gap-2">
+                        📅 Calendario de Citas General
+                    </h3>
+                    <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Vista por Mes / Semana / Día</span>
+                </div>
+                
+                <div id="full-calendar-container" class="w-full"></div>
             </div>
         </section>
 
@@ -355,7 +474,35 @@
             {{-- ── Listado del Historial ── --}}
             <div class="bg-[#181818] border border-gray-800 rounded-2xl overflow-hidden">
                 <div class="divide-y divide-gray-800/60 max-h-[600px] overflow-y-auto" id="barber-history-list">
-                    @forelse($todasLasCitas as $cita)
+                    @php
+                        $citasOrdenadasBarbero = $todasLasCitas->sort(function ($a, $b) {
+                            $estadoA = strtolower($a->estado);
+                            $estadoB = strtolower($b->estado);
+                            
+                            $weightA = match(true) {
+                                in_array($estadoA, ['pendiente', 'confirmada']) => 1,
+                                $estadoA === 'completada' => 2,
+                                $estadoA === 'cancelada' => 3,
+                                default => 4
+                            };
+                            $weightB = match(true) {
+                                in_array($estadoB, ['pendiente', 'confirmada']) => 1,
+                                $estadoB === 'completada' => 2,
+                                $estadoB === 'cancelada' => 3,
+                                default => 4
+                            };
+                            
+                            if ($weightA !== $weightB) {
+                                return $weightA <=> $weightB;
+                            }
+                            
+                            // Cita más reciente primero si el estado es el mismo
+                            $fechaA = $a->fecha . ' ' . $a->hora;
+                            $fechaB = $b->fecha . ' ' . $b->hora;
+                            return $fechaB <=> $fechaA;
+                        });
+                    @endphp
+                    @forelse($citasOrdenadasBarbero as $cita)
                         @php
                             $estadoOriginal = strtolower($cita->estado);
                             
@@ -390,6 +537,12 @@
                                     Teléfono: <span class="text-gray-300 font-semibold">{{ $cita->telefono }}</span>
                                     @if($cita->email)
                                         &nbsp;·&nbsp; Email: <span class="text-gray-300">{{ $cita->email }}</span>
+                                    @endif
+                                    @if($cita->motivo_cancelacion)
+                                        <br>
+                                        <span class="text-xs text-red-400 bg-red-500/5 border border-red-500/10 rounded px-2 py-0.5 inline-block mt-1 font-mono">
+                                            Motivo Cancelación: <span class="text-gray-300 font-medium font-sans">{{ $cita->motivo_cancelacion }}</span>
+                                        </span>
                                     @endif
                                 </p>
                             </div>
@@ -532,6 +685,8 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
 
     <script>
+        let calendar = null;
+
         // ==================== TABS SWITCHER ====================
         function switchTab(tabName) {
             // Ocultar todos los contenidos de tabs
@@ -542,7 +697,131 @@
             // Mostrar el tab seleccionado
             document.getElementById('content-' + tabName).classList.remove('hidden');
             document.getElementById('tab-' + tabName).classList.add('active-tab');
+
+            // Renderizar FullCalendar al activar pestaña de calendario
+            if (tabName === 'calendario' && calendar) {
+                setTimeout(() => {
+                    calendar.render();
+                }, 50);
+            }
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('full-calendar-container');
+            if (calendarEl) {
+                const events = [
+                    @foreach($todasLasCitas as $cita)
+                    {
+                        id: '{{ $cita->id }}',
+                        title: '{{ addslashes($cita->nombre_cliente) }} - {{ addslashes($cita->servicio) }}',
+                        start: '{{ $cita->fecha }}T{{ $cita->hora }}',
+                        color: @if(strtolower($cita->estado) === 'completada') '#10b981' @elseif(in_array(strtolower($cita->estado), ['pendiente', 'confirmada'])) '#3b82f6' @else '#ef4444' @endif,
+                        textColor: '#ffffff',
+                        extendedProps: {
+                            cliente: '{{ addslashes($cita->nombre_cliente) }}',
+                            servicio: '{{ addslashes($cita->servicio) }}',
+                            telefono: '{{ addslashes($cita->telefono) }}',
+                            estado: '{{ addslashes($cita->estado) }}',
+                            fecha: '{{ $cita->fecha }}',
+                            hora: '{{ $cita->hora }}'
+                        }
+                    },
+                    @endforeach
+                ];
+
+                calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    locale: 'es',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    },
+                    buttonText: {
+                        today: 'Hoy',
+                        month: 'Mes',
+                        week: 'Semana',
+                        day: 'Día'
+                    },
+                    events: events,
+                    eventClick: function(info) {
+                        const props = info.event.extendedProps;
+                        const [h, m] = props.hora.split(':');
+                        const hourNum = parseInt(h);
+                        const ampm = hourNum >= 12 ? 'PM' : 'AM';
+                        const displayHour = hourNum % 12 || 12;
+                        const formattedTime = `${displayHour}:${m} ${ampm}`;
+                        
+                        let statusBadge = '';
+                        const lowerEstado = props.estado.toLowerCase();
+                        if (lowerEstado === 'pendiente' || lowerEstado === 'confirmada') {
+                            statusBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">Pendiente</span>`;
+                        } else if (lowerEstado === 'completada') {
+                            statusBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-500/10 text-green-400 border border-green-500/20">Completada</span>`;
+                        } else {
+                            statusBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20">Cancelada</span>`;
+                        }
+
+                        let actionsHtml = '';
+                        if (lowerEstado === 'pendiente' || lowerEstado === 'confirmada') {
+                            actionsHtml = `
+                                <div class="flex justify-center gap-2 pt-4 border-t border-gray-800">
+                                    <button onclick="Swal.close(); completarCita(${info.event.id})" class="bg-green-600 hover:bg-green-700 text-white text-xs px-4 py-2 rounded-lg font-bold transition">
+                                        Llegó (Completar)
+                                    </button>
+                                    <button onclick="Swal.close(); reagendarCita(${info.event.id}, '${props.fecha}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2 rounded-lg font-bold transition">
+                                        Reagendar
+                                    </button>
+                                    <button onclick="Swal.close(); cancelarCitaBarbero(${info.event.id})" class="bg-red-600 hover:bg-red-700 text-white text-xs px-4 py-2 rounded-lg font-bold transition">
+                                        Cancelar Cita
+                                    </button>
+                                </div>
+                            `;
+                        }
+
+                        Swal.fire({
+                            title: 'Detalles de la Cita',
+                            html: `
+                                <div class="text-left space-y-3.5 pb-4">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs text-gray-500 font-semibold uppercase">Estado</span>
+                                        ${statusBadge}
+                                    </div>
+                                    <div class="border-t border-gray-800/60 my-2"></div>
+                                    <div>
+                                        <span class="block text-xs text-gray-500 font-semibold uppercase">Cliente</span>
+                                        <span class="text-base font-bold text-white">${props.cliente}</span>
+                                    </div>
+                                    <div>
+                                        <span class="block text-xs text-gray-500 font-semibold uppercase">Servicio</span>
+                                        <span class="text-sm font-medium text-yellow-500">${props.servicio}</span>
+                                    </div>
+                                    <div>
+                                        <span class="block text-xs text-gray-500 font-semibold uppercase">Teléfono</span>
+                                        <span class="text-sm font-mono text-gray-300">${props.telefono}</span>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <span class="block text-xs text-gray-500 font-semibold uppercase">Fecha</span>
+                                            <span class="text-sm font-semibold text-gray-300">${props.fecha}</span>
+                                        </div>
+                                        <div>
+                                            <span class="block text-xs text-gray-500 font-semibold uppercase">Hora</span>
+                                            <span class="text-sm font-semibold text-gray-300">${formattedTime}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                ${actionsHtml}
+                            `,
+                            background: '#181818',
+                            color: '#fff',
+                            showConfirmButton: false,
+                            showCloseButton: true
+                        });
+                    }
+                });
+            }
+        });
 
         // ==================== SERVICE FORM ACTIONS ====================
         const charCounter = document.getElementById('char-counter');
@@ -618,6 +897,7 @@
             flatpickr(datepicker, {
                 locale: 'es',
                 dateFormat: 'Y-m-d',
+                minDate: 'today',
                 defaultDate: 'today',
                 onChange: function(selectedDates, dateStr) {
                     if (dateStr) {
@@ -641,7 +921,26 @@
                                         const displayTime = `${displayHour}:${m} ${ampm}`;
 
                                         const item = document.createElement('div');
-                                        item.className = "bg-black border border-gray-800 p-4 rounded-xl flex justify-between items-center hover:border-yellow-500/30 transition";
+                                        item.className = "bg-black border border-gray-800 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-yellow-500/30 transition";
+                                        
+                                        const lowerEstado = cita.estado.toLowerCase();
+                                        let buttonsHtml = '';
+                                        if (lowerEstado === 'pendiente' || lowerEstado === 'confirmada') {
+                                            buttonsHtml = `
+                                                <div class="flex items-center gap-1.5 mt-2 sm:mt-0">
+                                                    <button type="button" onclick="completarCita(${cita.id})" class="bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 text-green-400 text-xs px-2.5 py-1.5 rounded-lg font-bold transition hover:scale-105 active:scale-[0.98]" title="Cliente llegó (Completada)">
+                                                        Llegó
+                                                    </button>
+                                                    <button type="button" onclick="reagendarCita(${cita.id}, '${cita.fecha}')" class="bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-400 text-xs px-2.5 py-1.5 rounded-lg font-bold transition hover:scale-105 active:scale-[0.98]" title="Reagendar cita">
+                                                        Reagendar
+                                                    </button>
+                                                    <button type="button" onclick="cancelarCitaBarbero(${cita.id})" class="bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 text-red-400 text-xs px-2.5 py-1.5 rounded-lg font-bold transition hover:scale-105 active:scale-[0.98]" title="Cancelar cita">
+                                                        Cancelar
+                                                    </button>
+                                                </div>
+                                            `;
+                                        }
+
                                         item.innerHTML = `
                                             <div class="space-y-1">
                                                 <div class="flex items-center gap-2">
@@ -653,10 +952,11 @@
                                                 <p class="text-xs text-gray-400">Servicio: <span class="text-gray-300">${cita.servicio}</span></p>
                                                 <p class="text-xs text-gray-400">Teléfono: <span class="text-gray-300">${cita.telefono}</span></p>
                                             </div>
-                                            <div>
+                                            <div class="flex flex-col sm:flex-row items-end sm:items-center gap-3">
                                                 <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">
                                                     ${cita.estado}
                                                 </span>
+                                                ${buttonsHtml}
                                             </div>
                                         `;
                                         citasContainer.appendChild(item);
@@ -874,6 +1174,257 @@
                     } else {
                         item.classList.add('hidden');
                     }
+                }
+            });
+        }
+
+        function completarCita(citaId) {
+            Swal.fire({
+                title: '¿Marcar cita como completada?',
+                text: 'Esto registrará la cita como completada en tu historial.',
+                icon: 'question',
+                background: '#181818',
+                color: '#fff',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Sí, completar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/citas/${citaId}/completar`;
+                    
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = '_token';
+                    csrfInput.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfInput);
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        function cancelarCitaBarbero(citaId) {
+            Swal.fire({
+                title: '¿Estás seguro de cancelar esta cita?',
+                text: 'Selecciona el motivo de cancelación de la cita:',
+                icon: 'warning',
+                input: 'select',
+                inputOptions: {
+                    'El cliente no llego': 'El cliente no llegó',
+                    'Surgió un imprevisto de última hora': 'Surgió un imprevisto de última hora',
+                    'Enfermedad o malestar': 'Enfermedad o malestar',
+                    'otro': 'Otro motivo'
+                },
+                inputPlaceholder: 'Selecciona un motivo',
+                background: '#181818',
+                color: '#fff',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Sí, cancelar cita',
+                cancelButtonText: 'Regresar',
+                inputValidator: (value) => {
+                    return new Promise((resolve) => {
+                        if (value) {
+                            resolve();
+                        } else {
+                            resolve('Debes seleccionar un motivo para poder continuar');
+                        }
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const motivo = result.value;
+                    
+                    if (motivo === 'otro') {
+                        // Si selecciona "otro", pedir la justificación (entre 10 y 500 caracteres)
+                        Swal.fire({
+                            title: 'Justificación requerida',
+                            text: 'Escribe el motivo detallado de la cancelación (entre 10 y 500 caracteres):',
+                            input: 'textarea',
+                            inputAttributes: {
+                                minlength: 10,
+                                maxlength: 500,
+                                placeholder: 'Escribe tu justificación aquí...'
+                            },
+                            background: '#181818',
+                            color: '#fff',
+                            showCancelButton: true,
+                            confirmButtonColor: '#ef4444',
+                            cancelButtonColor: '#6b7280',
+                            confirmButtonText: 'Confirmar cancelación',
+                            cancelButtonText: 'Regresar',
+                            inputValidator: (text) => {
+                                if (!text) {
+                                    return 'La justificación es obligatoria';
+                                }
+                                if (text.length < 10) {
+                                    return 'Debe tener al menos 10 caracteres';
+                                }
+                                if (text.length > 500) {
+                                    return 'No puede superar los 500 caracteres';
+                                }
+                            }
+                        }).then((textareaResult) => {
+                            if (textareaResult.isConfirmed) {
+                                submitCancellation(citaId, 'otro', textareaResult.value);
+                            }
+                        });
+                    } else {
+                        submitCancellation(citaId, motivo, null);
+                    }
+                }
+            });
+        }
+
+        function submitCancellation(citaId, motivo, otroMotivo) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/citas/${citaId}/cancelar`;
+            
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = '{{ csrf_token() }}';
+            form.appendChild(csrfInput);
+            
+            const motivoInput = document.createElement('input');
+            motivoInput.type = 'hidden';
+            motivoInput.name = 'motivo_cancelacion';
+            motivoInput.value = motivo;
+            form.appendChild(motivoInput);
+            
+            if (otroMotivo) {
+                const otroInput = document.createElement('input');
+                otroInput.type = 'hidden';
+                otroInput.name = 'otro_motivo';
+                otroInput.value = otroMotivo;
+                form.appendChild(otroInput);
+            }
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function reagendarCita(citaId, fechaActual) {
+            Swal.fire({
+                title: 'Reagendar Cita',
+                html: `
+                    <div class="text-left space-y-4">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Nueva Fecha</label>
+                            <input type="text" id="reagendar-fecha" class="w-full bg-black border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-yellow-500" placeholder="Selecciona una fecha">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Nueva Hora</label>
+                            <select id="reagendar-hora" disabled class="w-full bg-black border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-yellow-500">
+                                <option value="">Selecciona una fecha primero</option>
+                            </select>
+                        </div>
+                    </div>
+                `,
+                background: '#181818',
+                color: '#fff',
+                showCancelButton: true,
+                confirmButtonColor: '#3b82f6',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Confirmar Cambio',
+                cancelButtonText: 'Cancelar',
+                didOpen: () => {
+                    const dateInput = document.getElementById('reagendar-fecha');
+                    const timeSelect = document.getElementById('reagendar-hora');
+                    
+                    flatpickr(dateInput, {
+                        locale: 'es',
+                        dateFormat: 'Y-m-d',
+                        minDate: 'today',
+                        defaultDate: fechaActual,
+                        disable: [
+                            function(date) {
+                                return (date.getDay() === 0); // Deshabilitar Domingos
+                            }
+                        ],
+                        onChange: function(selectedDates, dateStr) {
+                            if (dateStr) {
+                                timeSelect.innerHTML = '<option value="">Cargando horas...</option>';
+                                timeSelect.disabled = true;
+                                
+                                fetch(`/citas/horas-disponibles?fecha=${dateStr}`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        timeSelect.innerHTML = '';
+                                        if (data.error) {
+                                            Swal.showValidationMessage(data.error);
+                                            timeSelect.innerHTML = '<option value="">Selecciona otro día</option>';
+                                            return;
+                                        }
+                                        if (data.length > 0) {
+                                            timeSelect.disabled = false;
+                                            data.forEach(hora => {
+                                                const option = document.createElement('option');
+                                                option.value = hora;
+                                                
+                                                const [h, m] = hora.split(':');
+                                                const hourNum = parseInt(h);
+                                                const ampm = hourNum >= 12 ? 'PM' : 'AM';
+                                                const displayHour = hourNum % 12 || 12;
+                                                option.textContent = `${displayHour}:${m} ${ampm}`;
+                                                timeSelect.appendChild(option);
+                                            });
+                                        } else {
+                                            timeSelect.innerHTML = '<option value="">No hay horarios disponibles</option>';
+                                        }
+                                    });
+                            }
+                        }
+                    });
+                },
+                preConfirm: () => {
+                    const fecha = document.getElementById('reagendar-fecha').value;
+                    const hora = document.getElementById('reagendar-hora').value;
+                    
+                    if (!fecha) {
+                        Swal.showValidationMessage('Debes seleccionar una fecha.');
+                        return false;
+                    }
+                    if (!hora) {
+                        Swal.showValidationMessage('Debes seleccionar una hora.');
+                        return false;
+                    }
+                    
+                    return { fecha, hora };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/citas/${citaId}/reagendar`;
+                    
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = '_token';
+                    csrfInput.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfInput);
+                    
+                    const fechaInput = document.createElement('input');
+                    fechaInput.type = 'hidden';
+                    fechaInput.name = 'fecha';
+                    fechaInput.value = result.value.fecha;
+                    form.appendChild(fechaInput);
+                    
+                    const horaInput = document.createElement('input');
+                    horaInput.type = 'hidden';
+                    horaInput.name = 'hora';
+                    horaInput.value = result.value.hora;
+                    form.appendChild(horaInput);
+                    
+                    document.body.appendChild(form);
+                    form.submit();
                 }
             });
         }

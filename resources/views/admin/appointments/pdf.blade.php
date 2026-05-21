@@ -32,20 +32,46 @@
         <p>Documento generado automáticamente</p>
     </div>
 
-    <div class="meta">
-        <span>Total de registros: <strong>{{ $appointments->count() }}</strong></span>
+    @php
+        $total = $appointments->count();
+        
+        // Count active/pending states (pendiente, confirmada)
+        $pendientes = $appointments->filter(fn($c) => in_array(strtolower($c->estado), ['pendiente', 'confirmada']))->count();
+        $completadas = $appointments->filter(fn($c) => strtolower($c->estado) === 'completada')->count();
+        $canceladas = $appointments->filter(fn($c) => strtolower($c->estado) === 'cancelada')->count();
+
+        $pctPendientes = $total > 0 ? round(($pendientes / $total) * 100, 1) : 0;
+        $pctCompletadas = $total > 0 ? round(($completadas / $total) * 100, 1) : 0;
+        $pctCanceladas = $total > 0 ? round(($canceladas / $total) * 100, 1) : 0;
+    @endphp
+
+    <div class="meta" style="margin-bottom: 5px;">
+        <span>Total de registros: <strong>{{ $total }}</strong></span>
         <span>Generado el: {{ now()->format('d/m/Y H:i') }}</span>
     </div>
 
-    <div class="totals">
-        Pendientes: <span>{{ $appointments->whereIn('estado', ['Pendiente','pendiente'])->count() }}</span>
-        &nbsp;&nbsp;|&nbsp;&nbsp;
-        Confirmadas: <span>{{ $appointments->whereIn('estado', ['Confirmada','confirmada'])->count() }}</span>
-        &nbsp;&nbsp;|&nbsp;&nbsp;
-        Completadas: <span>{{ $appointments->where('estado', 'completada')->count() }}</span>
-        &nbsp;&nbsp;|&nbsp;&nbsp;
-        Canceladas: <span>{{ $appointments->whereIn('estado', ['Cancelada','cancelada'])->count() }}</span>
-    </div>
+    <table class="stats-table" style="width: 100%; margin-bottom: 20px; border-collapse: separate; border-spacing: 12px 0; margin-left: -12px; margin-right: -12px;">
+        <tr>
+            <td style="width: 33.33%; background: #fafafa; border-top: 4px solid #eab308; padding: 12px; border-radius: 6px; text-align: center; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+                <div style="font-size: 9px; text-transform: uppercase; color: #64748b; font-weight: bold; margin-bottom: 4px; letter-spacing: 0.5px;">Pendientes / Confirmadas</div>
+                <div style="font-size: 18px; font-weight: bold; color: #1e293b;">
+                    {{ $pendientes }} <span style="font-size: 11px; color: #eab308; font-weight: bold; margin-left: 3px;">({{ $pctPendientes }}%)</span>
+                </div>
+            </td>
+            <td style="width: 33.33%; background: #fafafa; border-top: 4px solid #10b981; padding: 12px; border-radius: 6px; text-align: center; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+                <div style="font-size: 9px; text-transform: uppercase; color: #64748b; font-weight: bold; margin-bottom: 4px; letter-spacing: 0.5px;">Completadas</div>
+                <div style="font-size: 18px; font-weight: bold; color: #1e293b;">
+                    {{ $completadas }} <span style="font-size: 11px; color: #10b981; font-weight: bold; margin-left: 3px;">({{ $pctCompletadas }}%)</span>
+                </div>
+            </td>
+            <td style="width: 33.33%; background: #fafafa; border-top: 4px solid #ef4444; padding: 12px; border-radius: 6px; text-align: center; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+                <div style="font-size: 9px; text-transform: uppercase; color: #64748b; font-weight: bold; margin-bottom: 4px; letter-spacing: 0.5px;">Canceladas</div>
+                <div style="font-size: 18px; font-weight: bold; color: #1e293b;">
+                    {{ $canceladas }} <span style="font-size: 11px; color: #ef4444; font-weight: bold; margin-left: 3px;">({{ $pctCanceladas }}%)</span>
+                </div>
+            </td>
+        </tr>
+    </table>
 
     <table>
         <thead>

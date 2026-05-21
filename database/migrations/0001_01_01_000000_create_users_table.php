@@ -20,7 +20,7 @@ return new class extends Migration
 
             //Nuevos valores asignador
             $table->string('id_number');
-            $table->string('phone');
+            $table->string('phone')->nullable();
             $table->string('address');
 
             

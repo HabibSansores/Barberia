@@ -306,9 +306,18 @@
                             <p class="text-sm text-gray-300">Servicio: <span class="text-white font-semibold">{{ $cita->servicio }}</span></p>
                             <p class="text-sm text-gray-300">Barbero: <span class="text-white font-semibold">{{ $cita->barbero }}</span></p>
                         </div>
-                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 self-start sm:self-auto">
-                            {{ $cita->estado }}
-                        </span>
+                        <div class="flex items-center gap-3 self-start sm:self-auto">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
+                                {{ $cita->estado }}
+                            </span>
+                            @if(in_array(strtolower($cita->estado), ['pendiente', 'confirmada']))
+                                <button type="button" 
+                                        onclick="cancelarCitaCliente({{ $cita->id }})" 
+                                        class="bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 hover:border-red-500/50 text-red-400 text-xs font-bold py-1.5 px-3 rounded-lg transition active:scale-[0.98]">
+                                    Cancelar Cita
+                                </button>
+                            @endif
+                        </div>
                     </div>
                     @endforeach
                 </div>
@@ -323,8 +332,36 @@
                 </div>
 
                 @if($misCitas->count() > 0)
+                @php
+                    $citasOrdenadas = $misCitas->sort(function ($a, $b) {
+                        $estadoA = strtolower($a->estado);
+                        $estadoB = strtolower($b->estado);
+                        
+                        $weightA = match(true) {
+                            in_array($estadoA, ['pendiente', 'confirmada']) => 1,
+                            $estadoA === 'completada' => 2,
+                            $estadoA === 'cancelada' => 3,
+                            default => 4
+                        };
+                        $weightB = match(true) {
+                            in_array($estadoB, ['pendiente', 'confirmada']) => 1,
+                            $estadoB === 'completada' => 2,
+                            $estadoB === 'cancelada' => 3,
+                            default => 4
+                        };
+                        
+                        if ($weightA !== $weightB) {
+                            return $weightA <=> $weightB;
+                        }
+                        
+                        // Cita más reciente primero si el estado es el mismo
+                        $fechaA = $a->fecha . ' ' . $a->hora;
+                        $fechaB = $b->fecha . ' ' . $b->hora;
+                        return $fechaB <=> $fechaA;
+                    });
+                @endphp
                 <div class="divide-y divide-gray-800/60 max-h-[500px] overflow-y-auto">
-                    @foreach($misCitas as $cita)
+                    @foreach($citasOrdenadas as $cita)
                     @php
                         $estado = strtolower($cita->estado);
                         $colorBadge = match(true) {
@@ -342,6 +379,11 @@
                                 Barbero: {{ $cita->barbero }} &nbsp;·&nbsp;
                                 {{ \Carbon\Carbon::parse($cita->fecha)->format('d/m/Y') }} a las {{ date('g:i A', strtotime($cita->hora)) }}
                             </p>
+                            @if($cita->motivo_cancelacion)
+                                <p class="text-xs text-red-400 bg-red-500/5 border border-red-500/10 rounded px-2 py-0.5 inline-block mt-1">
+                                    Motivo Cancelación: <span class="text-gray-300 font-medium">{{ $cita->motivo_cancelacion }}</span>
+                                </p>
+                            @endif
                         </div>
                         <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $colorBadge }} self-start sm:self-auto">
                             {{ ucfirst($cita->estado) }}
@@ -498,6 +540,60 @@
                 }
             });
         });
+
+        function cancelarCitaCliente(citaId) {
+            Swal.fire({
+                title: '¿Estás seguro de cancelar tu cita?',
+                text: 'Esta acción no se puede deshacer. Por favor selecciona el motivo de cancelación:',
+                icon: 'warning',
+                input: 'select',
+                inputOptions: {
+                    'Ya no requiero el servicio': 'Ya no requiero el servicio',
+                    'no llegare al servicio': 'no llegare al servicio',
+                    'Enfermedad o malestar': 'Enfermedad o malestar',
+                    'Surgió un imprevisto de última hora': 'Surgió un imprevisto de última hora',
+                    'otro': 'Otro motivo'
+                },
+                inputPlaceholder: 'Selecciona un motivo',
+                background: '#181818',
+                color: '#fff',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Sí, cancelar cita',
+                cancelButtonText: 'Regresar',
+                inputValidator: (value) => {
+                    return new Promise((resolve) => {
+                        if (value) {
+                            resolve();
+                        } else {
+                            resolve('Debes seleccionar un motivo para poder continuar');
+                        }
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/citas/${citaId}/cancelar`;
+                    
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = '_token';
+                    csrfInput.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfInput);
+                    
+                    const motivoInput = document.createElement('input');
+                    motivoInput.type = 'hidden';
+                    motivoInput.name = 'motivo_cancelacion';
+                    motivoInput.value = result.value;
+                    form.appendChild(motivoInput);
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
     </script>
 </body>
 </html>

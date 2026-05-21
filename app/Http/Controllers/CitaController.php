@@ -58,22 +58,44 @@ class CitaController extends Controller
         }
         $whatsappUrl = "https://wa.me/{$phone}?text=" . urlencode($mensaje);
 
-        // 2. Enviar correo electrónico con PDF si se proporcionó correo
+        // 2. Enviar correo electrónico de confirmación con PDF al cliente y al barbero
         $emailStatus = '';
-        if ($cita->email) {
-            try {
-                // Generar PDF usando laravel-dompdf
-                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('emails.cita_pdf', compact('cita'));
-                $pdfData = $pdf->output();
+        try {
+            // Generar PDF usando laravel-dompdf
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('emails.cita_pdf', compact('cita'));
+            $pdfData = $pdf->output();
 
-                // Enviar Mail
-                \Illuminate\Support\Facades\Mail::to($cita->email)->send(new \App\Mail\CitaConfirmationMail($cita, $pdfData));
-                $emailStatus = ' y correo de confirmación enviado';
-            } catch (\Exception $e) {
-                // Registrar el error para debuggear pero permitir que el flujo continúe
-                \Illuminate\Support\Facades\Log::error('Error al enviar correo de cita: ' . $e->getMessage());
-                $emailStatus = ' (error al enviar correo)';
+            // Notificar al Cliente si proporcionó correo
+            if ($cita->email) {
+                try {
+                    \Illuminate\Support\Facades\Mail::to($cita->email)->send(new \App\Mail\CitaConfirmationMail($cita, $pdfData));
+                    $emailStatus = ' y correo de confirmación enviado al cliente';
+                } catch (\Exception $clientMailException) {
+                    \Illuminate\Support\Facades\Log::error('Error al enviar correo de confirmación al cliente: ' . $clientMailException->getMessage());
+                    $emailStatus = ' (error al enviar correo al cliente)';
+                }
             }
+
+            // Notificar al Barbero de la nueva cita inmediatamente
+            try {
+                $barberUser = \App\Models\User::role('Barbero')
+                    ->where('name', $cita->barbero)
+                    ->first();
+                if ($barberUser) {
+                    \Illuminate\Support\Facades\Mail::to($barberUser->email)->send(new \App\Mail\BarberNewAppointmentMail($cita, $barberUser, $pdfData));
+                    if ($emailStatus !== '') {
+                        $emailStatus .= ' y al barbero';
+                    } else {
+                        $emailStatus = ' y notificación enviada al barbero';
+                    }
+                }
+            } catch (\Exception $barberMailException) {
+                \Illuminate\Support\Facades\Log::error('Error al enviar correo de confirmación al barbero: ' . $barberMailException->getMessage());
+            }
+
+        } catch (\Exception $pdfException) {
+            \Illuminate\Support\Facades\Log::error('Error al generar PDF o procesar correos de la cita: ' . $pdfException->getMessage());
+            $emailStatus = ' (error al procesar confirmación por correo)';
         }
 
         return redirect()->back()->with([
@@ -127,8 +149,9 @@ class CitaController extends Controller
             }
         }
 
-        // Obtener las horas ya ocupadas para esta fecha
+        // Obtener las horas ya ocupadas para esta fecha (excluyendo citas canceladas)
         $bookedSlots = \App\Models\Cita::where('fecha', $fecha)
+            ->whereNotIn('estado', ['cancelada', 'Cancelada'])
             ->pluck('hora')
             ->map(function ($time) {
                 return date('H:i', strtotime($time));
@@ -160,5 +183,63 @@ class CitaController extends Controller
         }
 
         return response()->json(['success' => false, 'message' => 'Cliente no encontrado.']);
+    }
+
+    public function completar(\App\Models\Cita $cita)
+    {
+        $cita->update(['estado' => 'completada']);
+        return redirect()->back()->with('success', 'La cita ha sido marcada como COMPLETADA.');
+    }
+
+    public function cancelar(Request $request, \App\Models\Cita $cita)
+    {
+        $request->validate([
+            'motivo_cancelacion' => 'required|string',
+            'otro_motivo' => 'nullable|string'
+        ]);
+
+        $motivo = $request->motivo_cancelacion;
+        if ($motivo === 'otro') {
+            $request->validate([
+                'otro_motivo' => 'required|string|min:10|max:500'
+            ]);
+            $motivo = $request->otro_motivo;
+        }
+
+        $cita->update([
+            'estado' => 'cancelada',
+            'motivo_cancelacion' => $motivo
+        ]);
+
+        return redirect()->back()->with('success', 'La cita ha sido CANCELADA correctamente.');
+    }
+
+    public function reagendar(Request $request, \App\Models\Cita $cita)
+    {
+        $request->validate([
+            'fecha' => 'required|date',
+            'hora' => 'required'
+        ]);
+
+        // Si se reagenda para hoy, validar que el horario no haya pasado
+        $today = \Carbon\Carbon::now('America/Mexico_City')->toDateString();
+        if ($request->fecha === $today) {
+            $currentHour = \Carbon\Carbon::now('America/Mexico_City')->format('H:i');
+            $selectedHour = date('H:i', strtotime($request->hora));
+            $dayOfWeek = date('w', strtotime($request->fecha));
+            $lastHour = ($dayOfWeek == 6) ? '17:00' : '19:00';
+
+            if ($currentHour >= $lastHour || $selectedHour <= $currentHour) {
+                return redirect()->back()->with('error_msg', 'El día de trabajo de la barbería de hoy es de 9am a 7pm. Ese horario ya pasó por el día de hoy. Intente reagendar para otro momento.');
+            }
+        }
+
+        $cita->update([
+            'fecha' => $request->fecha,
+            'hora' => $request->hora,
+            'estado' => 'Confirmada'
+        ]);
+
+        return redirect()->back()->with('success', 'La cita ha sido REAGENDADA con éxito.');
     }
 }

@@ -23,7 +23,7 @@ class CitaReminderMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '⏰ Recordatorio de tu Cita Mañana - Barbería',
+            subject: '⏰ Recordatorio de tu Cita de Mañana - Barbería',
         );
     }
 

@@ -1,10 +1,10 @@
-<nav class="fixed top-0 z-50 w-full bg-neutral-primary-soft border-b border-default">
-    <div class="px-3 py-3 lg:px-5 lg:pl-3">
+<nav class="fixed top-0 z-50 w-full bg-[#0a0a0a]/90 backdrop-blur-md border-b border-gray-800">
+    <div class="px-4 py-3.5 lg:px-6">
         <div class="flex items-center justify-between">
             <div class="flex items-center justify-start rtl:justify-end">
                 <button data-drawer-target="top-bar-sidebar" data-drawer-toggle="top-bar-sidebar"
                     aria-controls="top-bar-sidebar" type="button"
-                    class="sm:hidden text-heading bg-transparent box-border border border-transparent hover:bg-neutral-secondary-medium focus:ring-4 focus:ring-neutral-tertiary font-medium leading-5 rounded-base text-sm p-2 focus:outline-none">
+                    class="sm:hidden text-white bg-transparent border border-gray-800 hover:bg-[#1a1a1a] focus:ring-2 focus:ring-yellow-500 font-medium rounded-lg text-sm p-2 focus:outline-none transition">
                     <span class="sr-only">Open sidebar</span>
                     <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                         height="24" fill="none" viewBox="0 0 24 24">
@@ -12,9 +12,9 @@
                             d="M5 7h14M5 12h14M5 17h10" />
                     </svg>
                 </button>
-                <a href="/" class="flex ms-2 md:me-24">
-                    <img src="{{ asset('images/ejemplo1.png') }}" class="h-6 me-3" alt="FlowBite Logo" />
-                    <span class="self-center text-lg font-semibold whitespace-nowrap dark:text-white"></span>
+                <a href="/" class="flex ms-3 md:me-24 items-center gap-2">
+                    <img src="{{ asset('images/ejemplo1.png') }}" class="h-8 rounded" alt="Logo" />
+                    <span class="self-center text-lg font-bold text-yellow-500 uppercase tracking-wide">BarberShop Admin</span>
                 </a>
             </div>
 
@@ -31,7 +31,7 @@
                         @else
                             <span class="inline-flex rounded-md">
                                 <button type="button"
-                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none focus:bg-gray-50 active:bg-gray-50 transition ease-in-out duration-150">
+                                    class="inline-flex items-center px-4 py-2 border border-gray-800 text-sm leading-4 font-semibold rounded-lg text-white bg-black hover:text-yellow-500 hover:border-yellow-500/50 focus:outline-none transition ease-in-out duration-150">
                                     {{ Auth::user()->name }}
 
                                     <svg class="ms-2 -me-0.5 size-4" xmlns="http://www.w3.org/2000/svg" fill="none"

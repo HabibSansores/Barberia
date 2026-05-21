@@ -23,15 +23,12 @@ class ServiceController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'duration_minutes' => 'required|integer|min:1',
-            'image_path' => 'nullable|image|max:2048',
         ]);
 
-        if ($request->hasFile('image_path')) {
-            $data['image_path'] = $request->file('image_path')->store('services', 'public');
-        }
+        $data['duration_minutes'] = 30; // Valor por defecto ya que no es relevante
+        $data['image_path'] = null;
 
         Service::create($data);
 
@@ -57,18 +54,11 @@ class ServiceController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'duration_minutes' => 'required|integer|min:1',
-            'image_path' => 'nullable|image|max:2048',
         ]);
 
-        if ($request->hasFile('image_path')) {
-            if ($service->image_path) {
-                Storage::disk('public')->delete($service->image_path);
-            }
-            $data['image_path'] = $request->file('image_path')->store('services', 'public');
-        }
+        $data['duration_minutes'] = 30; // Valor por defecto ya que no es relevante
 
         $service->update($data);
 

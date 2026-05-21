@@ -12,7 +12,7 @@ test('user accounts can be deleted', function () {
         ->set('password', 'password')
         ->call('deleteUser');
 
-    expect($user->fresh())->toBeNull();
+    expect($user->fresh()->deleted_at)->not->toBeNull();
 })->skip(function () {
     return ! Features::hasAccountDeletionFeatures();
 }, 'Account deletion is not enabled.');

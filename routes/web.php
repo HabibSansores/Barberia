@@ -7,7 +7,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ServiceController;
 
 Route::get('/', function () {
-    return view('welcome');
+    $services = \App\Models\Service::all();
+    $barberos = \App\Models\User::role('Barbero')->with('barbero')->get();
+    return view('welcome', compact('services', 'barberos'));
 });
 
 Route::middleware([
@@ -31,6 +33,11 @@ Route::middleware([
     Route::post('/servicios', [ServiceController::class, 'store'])->name('servicios.store');
     Route::put('/servicios/{service}', [ServiceController::class, 'update'])->name('servicios.update');
     Route::delete('/servicios/{service}', [ServiceController::class, 'destroy'])->name('servicios.destroy');
+
+    // Rutas para gestionar el estado de las citas (Llegó, Reagendar, Cancelar)
+    Route::post('/citas/{cita}/completar', [App\Http\Controllers\CitaController::class, 'completar'])->name('citas.completar');
+    Route::post('/citas/{cita}/reagendar', [App\Http\Controllers\CitaController::class, 'reagendar'])->name('citas.reagendar');
+    Route::post('/citas/{cita}/cancelar', [App\Http\Controllers\CitaController::class, 'cancelar'])->name('citas.cancelar');
 });
 
 // Rutas Públicas de Citas (para landing page)

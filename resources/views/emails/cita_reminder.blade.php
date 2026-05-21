@@ -114,12 +114,12 @@
 
                 {{-- Badge de recordatorio --}}
                 <div class="reminder-badge">
-                    <span>⏰ Tu cita es MAÑANA</span>
+                    <span>⏰ Tienes una cita programada</span>
                 </div>
 
                 <p>Hola <strong>{{ $cita->nombre_cliente }}</strong>,</p>
                 <p>
-                    Este es un recordatorio de que tienes una cita programada para <strong>mañana</strong>.
+                    Te recordamos que tienes una cita agendada para el día <strong>{{ \Carbon\Carbon::parse($cita->fecha)->format('d/m/Y') }}</strong> a las <strong>{{ \Carbon\Carbon::parse($cita->hora)->format('g:i A') }}</strong>.
                     Por favor, preséntate a tiempo o comunícate con nosotros si necesitas cancelar o reagendar.
                 </p>
 
