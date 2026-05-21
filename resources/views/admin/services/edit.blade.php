@@ -24,9 +24,9 @@
                 <x-wire-textarea label="Descripción" name="description">{{ old('description', $service->description) }}</x-wire-textarea>
 
                 <div class="grid lg:grid-cols-2 gap-4">
-                    <x-wire-input label="Precio" name="price" type="number" step="0.01" required prefix="$" :value="old('price', $service->price)"></x-wire-input>
+                    <x-wire-input label="Precio" name="price" type="number" min="0" step="0.01" required prefix="$" :value="old('price', $service->price)"></x-wire-input>
 
-                    <x-wire-input label="Duración (minutos)" name="duration_minutes" type="number" required :value="old('duration_minutes', $service->duration_minutes)"></x-wire-input>
+                    <x-wire-input label="Duración (minutos)" name="duration_minutes" type="number" min="1" required :value="old('duration_minutes', $service->duration_minutes)"></x-wire-input>
                 </div>
 
                 <div class="space-y-1">

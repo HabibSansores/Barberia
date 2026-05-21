@@ -32,6 +32,12 @@
                     </div>
                 @endif
 
+                @if(session('error_msg'))
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded relative mb-6 shadow-sm" role="alert">
+                        <span class="block font-semibold text-red-800">{{ session('error_msg') }}</span>
+                    </div>
+                @endif
+
                 <form method="POST" action="{{ route('citas.store') }}" class="space-y-6">
                     @csrf
                     
@@ -107,6 +113,12 @@
                             .then(response => response.json())
                             .then(data => {
                                 timeSelect.innerHTML = '';
+                                if (data.error) {
+                                    alert(data.error);
+                                    timeSelect.innerHTML = `<option value="">Seleccione otra fecha</option>`;
+                                    timeSelect.disabled = true;
+                                    return;
+                                }
                                 if (data.length > 0) {
                                     timeSelect.disabled = false;
                                     // Agregar opción inicial

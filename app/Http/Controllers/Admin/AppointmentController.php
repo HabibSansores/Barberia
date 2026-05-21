@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Appointment;
-use Illuminate\Http\Request;
+use App\Models\Cita;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
 {
@@ -14,50 +14,31 @@ class AppointmentController extends Controller
         return view('admin.appointments.index');
     }
 
-    public function create()
+    public function update(Request $request, Cita $appointment)
     {
-        // Typically appointments are created by clients, but admin can do it too.
-        // For simplicity we will only list and manage status for now.
-    }
-
-    public function store(Request $request)
-    {
-    }
-
-    public function show(Appointment $appointment)
-    {
-    }
-
-    public function edit(Appointment $appointment)
-    {
-    }
-
-    public function update(Request $request, Appointment $appointment)
-    {
-        // Admin solo actualiza estado
         $data = $request->validate([
-            'status' => 'required|in:pending,confirmed,completed,cancelled',
+            'estado' => 'required|in:Pendiente,Confirmada,completada,Cancelada',
         ]);
 
         $appointment->update($data);
 
         session()->flash('swal', [
-            'icon' => 'success',
+            'icon'  => 'success',
             'title' => 'Estado actualizado',
-            'text' => 'El estado de la cita ha sido actualizado',
+            'text'  => 'El estado de la cita ha sido actualizado correctamente.',
         ]);
 
         return back();
     }
 
-    public function destroy(Appointment $appointment)
+    public function destroy(Cita $appointment)
     {
-        $appointment->delete();
+        $appointment->delete(); // SoftDelete
 
         session()->flash('swal', [
-            'icon' => 'success',
+            'icon'  => 'success',
             'title' => 'Cita eliminada',
-            'text' => 'La cita ha sido eliminada',
+            'text'  => 'La cita ha sido eliminada del sistema.',
         ]);
 
         return back();
@@ -65,12 +46,13 @@ class AppointmentController extends Controller
 
     public function pdf()
     {
-        $appointments = Appointment::with(['client', 'barber', 'service'])
-            ->orderBy('appointment_date', 'asc')
-            ->orderBy('start_time', 'asc')
+        $appointments = Cita::orderBy('fecha', 'asc')
+            ->orderBy('hora', 'asc')
             ->get();
-            
-        $pdf = Pdf::loadView('admin.appointments.pdf', compact('appointments'));
-        return $pdf->download('reporte-citas.pdf');
+
+        $pdf = Pdf::loadView('admin.appointments.pdf', compact('appointments'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('reporte-citas-' . now()->format('Y-m-d') . '.pdf');
     }
 }

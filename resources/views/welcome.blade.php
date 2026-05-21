@@ -17,6 +17,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         body{
             font-family: 'Poppins', sans-serif;
@@ -563,13 +566,24 @@
                     if (dateStr) {
                         // Limpiar y deshabilitar temporalmente el select
                         timeSelect.innerHTML = '<option value="">Cargando horas...</option>';
-                        timeSelect.disabled = true;
-
-                        // Hacer petición AJAX para obtener horas disponibles
+                                // Hacer petición AJAX para obtener horas disponibles
                         fetch(`/citas/horas-disponibles?fecha=${dateStr}`)
                             .then(response => response.json())
                             .then(data => {
                                 timeSelect.innerHTML = '';
+                                if (data.error) {
+                                    Swal.fire({
+                                        title: 'Horario No Disponible',
+                                        text: data.error,
+                                        icon: 'warning',
+                                        background: '#181818',
+                                        color: '#fff',
+                                        confirmButtonColor: '#eab308'
+                                    });
+                                    timeSelect.innerHTML = `<option value="">Seleccione otra fecha</option>`;
+                                    timeSelect.disabled = true;
+                                    return;
+                                }
                                 if (data.length > 0) {
                                     timeSelect.disabled = false;
                                     
@@ -577,7 +591,7 @@
                                     placeholderOpt.value = '';
                                     placeholderOpt.textContent = 'Seleccione una hora';
                                     timeSelect.appendChild(placeholderOpt);
-
+ 
                                     data.forEach(hora => {
                                         const option = document.createElement('option');
                                         option.value = hora;
@@ -594,11 +608,6 @@
                                     timeSelect.innerHTML = '<option value="">No hay horas disponibles para este día</option>';
                                     timeSelect.disabled = true;
                                 }
-                            })
-                            .catch(error => {
-                                console.error('Error cargando horas:', error);
-                                timeSelect.innerHTML = '<option value="">Error al cargar horas</option>';
-                                timeSelect.disabled = true;
                             });
                     } else {
                         timeSelect.innerHTML = '<option value="">Seleccione una fecha primero</option>';

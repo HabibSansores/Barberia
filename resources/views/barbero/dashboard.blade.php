@@ -38,6 +38,7 @@
                 <button onclick="switchTab('inicio')" id="tab-inicio" class="tab-btn py-1 hover:text-yellow-500 transition active-tab">Inicio</button>
                 <button onclick="switchTab('servicios')" id="tab-servicios" class="tab-btn py-1 hover:text-yellow-500 transition">Servicios</button>
                 <button onclick="switchTab('citas')" id="tab-citas" class="tab-btn py-1 hover:text-yellow-500 transition">Citas</button>
+                <button onclick="switchTab('historial')" id="tab-historial" class="tab-btn py-1 hover:text-yellow-500 transition">Historial</button>
                 <button onclick="switchTab('perfil')" id="tab-perfil" class="tab-btn py-1 hover:text-yellow-500 transition">Perfil</button>
             </div>
 
@@ -85,6 +86,21 @@
             </script>
         @endif
 
+        @if(session('error_msg'))
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        title: 'Horario No Disponible',
+                        text: "{{ session('error_msg') }}",
+                        icon: 'warning',
+                        background: '#181818',
+                        color: '#fff',
+                        confirmButtonColor: '#eab308'
+                    });
+                });
+            </script>
+        @endif
+
         @if(session('service_success'))
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
@@ -104,6 +120,42 @@
 
         <!-- TAB: INICIO -->
         <section id="content-inicio" class="tab-content space-y-6">
+
+            {{-- ── ESTADÍSTICAS DEL DÍA ── --}}
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {{-- Total citas hoy --}}
+                <div class="bg-[#181818] border border-blue-900/50 p-5 rounded-2xl flex items-center gap-4">
+                    <div class="p-3 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-2xl flex-shrink-0">
+                        📅
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Total Hoy</p>
+                        <p class="text-3xl font-extrabold text-white">{{ $citas->count() }}</p>
+                    </div>
+                </div>
+                {{-- Completadas --}}
+                <div class="bg-[#181818] border border-green-900/50 p-5 rounded-2xl flex items-center gap-4">
+                    <div class="p-3 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-2xl flex-shrink-0">
+                        ✅
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Completadas</p>
+                        <p class="text-3xl font-extrabold text-white">{{ $citas->where('estado', 'completada')->count() }}</p>
+                    </div>
+                </div>
+                {{-- Pendientes --}}
+                <div class="bg-[#181818] border border-yellow-900/50 p-5 rounded-2xl flex items-center gap-4">
+                    <div class="p-3 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-2xl flex-shrink-0">
+                        ⏳
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Pendientes</p>
+                        <p class="text-3xl font-extrabold text-white">{{ $citas->whereIn('estado', ['pendiente', 'confirmada', null])->count() }}</p>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ── RESUMEN GENERAL ── --}}
             <div class="grid md:grid-cols-3 gap-6">
                 <!-- Card Servicios -->
                 <div class="bg-[#181818] border border-gray-800 p-6 rounded-2xl flex flex-col justify-between">
@@ -121,7 +173,7 @@
                     </div>
                     <button onclick="switchTab('citas')" class="mt-4 text-sm text-yellow-500 hover:underline text-left">Ver agenda completa →</button>
                 </div>
-                <!-- Card Info -->
+                <!-- Card Especialidad -->
                 <div class="bg-[#181818] border border-gray-800 p-6 rounded-2xl flex flex-col justify-between">
                     <div>
                         <h3 class="text-lg font-bold text-gray-400 mb-2">Mi Especialidad</h3>
@@ -277,6 +329,86 @@
             </div>
         </section>
 
+        <!-- TAB: HISTORIAL -->
+        <section id="content-historial" class="tab-content hidden space-y-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold">Historial de Citas</h3>
+                <span class="text-sm font-semibold text-yellow-500 uppercase tracking-wider">Historial Profesional</span>
+            </div>
+
+            {{-- ── Botones de Filtro ── --}}
+            <div class="inline-flex flex-row items-center gap-1 sm:gap-2 bg-[#121212] p-1.5 rounded-xl border border-gray-800 overflow-x-auto max-w-full">
+                <button onclick="filterBarberHistory('todas')" id="btn-filter-todas" class="filter-btn px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs font-bold transition bg-yellow-500 text-black whitespace-nowrap">
+                    Todas ({{ $todasLasCitas->count() }})
+                </button>
+                <button onclick="filterBarberHistory('activas')" id="btn-filter-activas" class="filter-btn px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs font-bold transition text-gray-400 hover:text-white whitespace-nowrap">
+                    Activas ({{ $todasLasCitas->whereIn('estado', ['Pendiente', 'pendiente', 'Confirmada', 'confirmada'])->count() }})
+                </button>
+                <button onclick="filterBarberHistory('finalizadas')" id="btn-filter-finalizadas" class="filter-btn px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs font-bold transition text-gray-400 hover:text-white whitespace-nowrap">
+                    Finalizadas ({{ $todasLasCitas->where('estado', 'completada')->count() }})
+                </button>
+                <button onclick="filterBarberHistory('canceladas')" id="btn-filter-canceladas" class="filter-btn px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs font-bold transition text-gray-400 hover:text-white whitespace-nowrap">
+                    Canceladas ({{ $todasLasCitas->whereIn('estado', ['Cancelada', 'cancelada'])->count() }})
+                </button>
+            </div>
+
+            {{-- ── Listado del Historial ── --}}
+            <div class="bg-[#181818] border border-gray-800 rounded-2xl overflow-hidden">
+                <div class="divide-y divide-gray-800/60 max-h-[600px] overflow-y-auto" id="barber-history-list">
+                    @forelse($todasLasCitas as $cita)
+                        @php
+                            $estadoOriginal = strtolower($cita->estado);
+                            
+                            // Categorizar para el filtro de JS
+                            $categoria = 'otras';
+                            if (in_array($estadoOriginal, ['pendiente', 'confirmada'])) {
+                                $categoria = 'activas';
+                            } elseif ($estadoOriginal === 'completada') {
+                                $categoria = 'finalizadas';
+                            } elseif (in_array($estadoOriginal, ['cancelada'])) {
+                                $categoria = 'canceladas';
+                            }
+
+                            $colorBadge = match(true) {
+                                in_array($estadoOriginal, ['pendiente']) => 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+                                in_array($estadoOriginal, ['confirmada']) => 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                                $estadoOriginal === 'completada' => 'bg-green-500/10 text-green-400 border-green-500/20',
+                                in_array($estadoOriginal, ['cancelada']) => 'bg-red-500/10 text-red-400 border-red-500/20',
+                                default => 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+                            };
+                        @endphp
+                        <div class="barber-history-item px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:bg-white/5 transition" data-category="{{ $categoria }}">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs px-2.5 py-0.5 rounded font-mono font-semibold">
+                                        {{ \Carbon\Carbon::parse($cita->fecha)->format('d/m/Y') }} — {{ date('g:i A', strtotime($cita->hora)) }}
+                                    </span>
+                                </div>
+                                <h4 class="text-base font-bold text-white">{{ $cita->nombre_cliente }}</h4>
+                                <p class="text-xs text-gray-400">
+                                    Servicio: <span class="text-gray-300 font-semibold">{{ $cita->servicio }}</span> &nbsp;·&nbsp;
+                                    Teléfono: <span class="text-gray-300 font-semibold">{{ $cita->telefono }}</span>
+                                    @if($cita->email)
+                                        &nbsp;·&nbsp; Email: <span class="text-gray-300">{{ $cita->email }}</span>
+                                    @endif
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $colorBadge }} self-start sm:self-auto uppercase tracking-wide">
+                                    {{ $cita->estado }}
+                                </span>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="px-6 py-12 text-center text-gray-500">
+                            <span class="text-4xl block mb-3">📋</span>
+                            No se encontraron citas en tu historial profesional.
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </section>
+
         <!-- TAB: PERFIL -->
         <section id="content-perfil" class="tab-content hidden">
             <div class="max-w-xl mx-auto bg-[#181818] border border-gray-800 p-8 rounded-2xl">
@@ -341,26 +473,26 @@
             <button onclick="hideCitaModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold">×</button>
             <h3 class="text-2xl font-bold text-yellow-500">Agendar Cita</h3>
 
-            <form method="POST" action="{{ route('citas.store') }}" class="space-y-4">
+            <form id="modal-cita-form" method="POST" action="{{ route('citas.store') }}" class="space-y-4">
                 @csrf
                 <input type="hidden" name="barbero" value="{{ $user->name }}">
 
                 <div>
+                    <label class="block mb-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Correo Electrónico (Para auto-completar)</label>
+                    <input type="email" name="email" id="modal-email" placeholder="cliente@correo.com"
+                           class="w-full bg-black border border-gray-700 rounded-xl px-4 py-2.5 focus:outline-none focus:border-yellow-500 text-white transition-all duration-300">
+                </div>
+
+                <div>
                     <label class="block mb-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Nombre del Cliente</label>
-                    <input type="text" name="nombre_cliente" required placeholder="Ej. Juan Pérez"
-                           class="w-full bg-black border border-gray-700 rounded-xl px-4 py-2.5 focus:outline-none focus:border-yellow-500 text-white transition">
+                    <input type="text" name="nombre_cliente" id="modal-nombre_cliente" required readonly placeholder="Se completará al ingresar correo"
+                           class="w-full bg-[#121212] border border-gray-800 rounded-xl px-4 py-2.5 focus:outline-none text-gray-400 cursor-not-allowed transition-all duration-300">
                 </div>
 
                 <div>
                     <label class="block mb-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Teléfono</label>
-                    <input type="text" name="telefono" required placeholder="Ej. 6671234567"
-                           class="w-full bg-black border border-gray-700 rounded-xl px-4 py-2.5 focus:outline-none focus:border-yellow-500 text-white transition">
-                </div>
-
-                <div>
-                    <label class="block mb-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Correo Electrónico (Opcional)</label>
-                    <input type="email" name="email" placeholder="cliente@correo.com"
-                           class="w-full bg-black border border-gray-700 rounded-xl px-4 py-2.5 focus:outline-none focus:border-yellow-500 text-white transition">
+                    <input type="text" name="telefono" id="modal-telefono" required readonly placeholder="Se completará al ingresar correo"
+                           class="w-full bg-[#121212] border border-gray-800 rounded-xl px-4 py-2.5 focus:outline-none text-gray-400 cursor-not-allowed transition-all duration-300">
                 </div>
 
                 <div>
@@ -568,6 +700,19 @@
                             .then(response => response.json())
                             .then(data => {
                                 modalHoraSelect.innerHTML = '';
+                                if (data.error) {
+                                    Swal.fire({
+                                        title: 'Horario No Disponible',
+                                        text: data.error,
+                                        icon: 'warning',
+                                        background: '#181818',
+                                        color: '#fff',
+                                        confirmButtonColor: '#eab308'
+                                    });
+                                    modalHoraSelect.innerHTML = `<option value="">Seleccione otra fecha</option>`;
+                                    modalHoraSelect.disabled = true;
+                                    return;
+                                }
                                 if (data.length > 0) {
                                     modalHoraSelect.disabled = false;
                                     const placeholderOpt = document.createElement('option');
@@ -593,6 +738,106 @@
                     }
                 }
             });
+
+            // Auto-completar datos del cliente por correo
+            const modalEmail = document.getElementById('modal-email');
+            const modalNombre = document.getElementById('modal-nombre_cliente');
+            const modalTelefono = document.getElementById('modal-telefono');
+            let searchTimeout = null;
+
+            if (modalEmail) {
+                modalEmail.addEventListener('input', function() {
+                    const email = this.value.trim();
+                    
+                    // Limpiar timeout anterior
+                    clearTimeout(searchTimeout);
+
+                    // Si está vacío o no parece correo, limpiar campos y quitar estilos de éxito
+                    if (!email || !email.includes('@')) {
+                        modalNombre.value = '';
+                        modalTelefono.value = '';
+                        modalNombre.classList.remove('border-green-500', 'text-green-400');
+                        modalNombre.classList.add('border-gray-800', 'text-gray-400');
+                        modalTelefono.classList.remove('border-green-500', 'text-green-400');
+                        modalTelefono.classList.add('border-gray-800', 'text-gray-400');
+                        return;
+                    }
+
+                    searchTimeout = setTimeout(() => {
+                        fetch(`/citas/buscar-cliente?email=${encodeURIComponent(email)}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Auto-completar
+                                    modalNombre.value = data.nombre;
+                                    modalTelefono.value = data.telefono;
+
+                                    // Aplicar efectos visuales premium
+                                    modalNombre.classList.remove('border-gray-800', 'text-gray-400');
+                                    modalNombre.classList.add('border-green-500', 'text-green-400');
+                                    modalTelefono.classList.remove('border-gray-800', 'text-gray-400');
+                                    modalTelefono.classList.add('border-green-500', 'text-green-400');
+
+                                    // Mostrar Toast de éxito elegante con SweetAlert2
+                                    const Toast = Swal.mixin({
+                                        toast: true,
+                                        position: 'top-end',
+                                        showConfirmButton: false,
+                                        timer: 3000,
+                                        timerProgressBar: true,
+                                        background: '#181818',
+                                        color: '#fff',
+                                        didOpen: (toast) => {
+                                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                                        }
+                                    });
+
+                                    Toast.fire({
+                                        icon: 'success',
+                                        title: '¡Cliente encontrado y auto-completado!'
+                                    });
+                                } else {
+                                    // Limpiar valores y clases si no se encuentra
+                                    modalNombre.value = '';
+                                    modalTelefono.value = '';
+                                    modalNombre.classList.remove('border-green-500', 'text-green-400');
+                                    modalNombre.classList.add('border-gray-800', 'text-gray-400');
+                                    modalTelefono.classList.remove('border-green-500', 'text-green-400');
+                                    modalTelefono.classList.add('border-gray-800', 'text-gray-400');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error al buscar cliente:', error);
+                            });
+                    }, 400); // 400ms debounce
+                });
+            }
+
+            // Validar que el formulario no se envíe vacío o incompleto
+            const modalCitaForm = document.getElementById('modal-cita-form');
+            if (modalCitaForm) {
+                modalCitaForm.addEventListener('submit', function(e) {
+                    const email = modalEmail.value.trim();
+                    const nombre = modalNombre.value.trim();
+                    const telefono = modalTelefono.value.trim();
+                    const fecha = document.getElementById('modal-fecha').value.trim();
+                    const hora = document.getElementById('modal-hora').value.trim();
+
+                    if (!email || !nombre || !telefono || !fecha || !hora) {
+                        e.preventDefault(); // Detener el envío del formulario
+                        
+                        Swal.fire({
+                            title: 'Campos Incompletos',
+                            text: 'Por favor, ingrese el correo electrónico de un cliente registrado para auto-completar sus datos y seleccione la fecha/hora de la cita para poder continuar.',
+                            icon: 'warning',
+                            background: '#181818',
+                            color: '#fff',
+                            confirmButtonColor: '#eab308'
+                        });
+                    }
+                });
+            }
         });
 
         function showCitaModal() {
@@ -601,6 +846,36 @@
 
         function hideCitaModal() {
             document.getElementById('cita-modal').classList.add('hidden');
+        }
+
+        // ==================== BARBER HISTORY FILTER ====================
+        function filterBarberHistory(category) {
+            // Reset active states for filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-yellow-500', 'text-black');
+                btn.classList.add('text-gray-400', 'hover:text-white');
+            });
+
+            // Set active button
+            const activeBtn = document.getElementById('btn-filter-' + category);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-gray-400', 'hover:text-white');
+                activeBtn.classList.add('bg-yellow-500', 'text-black');
+            }
+
+            // Filter the elements
+            const items = document.querySelectorAll('.barber-history-item');
+            items.forEach(item => {
+                if (category === 'todas') {
+                    item.classList.remove('hidden');
+                } else {
+                    if (item.getAttribute('data-category') === category) {
+                        item.classList.remove('hidden');
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                }
+            });
         }
     </script>
 </body>

@@ -16,6 +16,7 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/citas/buscar-cliente', [App\Http\Controllers\CitaController::class, 'buscarClienteByEmail'])->name('citas.buscar-cliente');
 
     // Rutas de Citas (Administración)
     Route::get('/citas/create', [App\Http\Controllers\CitaController::class, 'create'])->name('citas.create');

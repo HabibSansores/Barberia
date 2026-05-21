@@ -39,6 +39,7 @@
                 <button onclick="switchTab('servicios')" id="tab-servicios" class="tab-btn py-1 hover:text-yellow-500 transition">Servicios</button>
                 <button onclick="switchTab('barberos')" id="tab-barberos" class="tab-btn py-1 hover:text-yellow-500 transition">Barberos</button>
                 <button onclick="switchTab('citas')" id="tab-citas" class="tab-btn py-1 hover:text-yellow-500 transition">Citas</button>
+                <button onclick="switchTab('historial')" id="tab-historial" class="tab-btn py-1 hover:text-yellow-500 transition">Historial</button>
                 <button onclick="switchTab('perfil')" id="tab-perfil" class="tab-btn py-1 hover:text-yellow-500 transition">Perfil</button>
             </div>
 
@@ -101,6 +102,21 @@
                         title: '¡Operación Exitosa!',
                         text: "{{ session('success_profile') }}",
                         icon: 'success',
+                        background: '#181818',
+                        color: '#fff',
+                        confirmButtonColor: '#eab308'
+                    });
+                });
+            </script>
+        @endif
+
+        @if(session('error_msg'))
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        title: 'Horario No Disponible',
+                        text: "{{ session('error_msg') }}",
+                        icon: 'warning',
                         background: '#181818',
                         color: '#fff',
                         confirmButtonColor: '#eab308'
@@ -181,10 +197,24 @@
                 <form method="POST" action="{{ route('citas.store') }}" class="space-y-5">
                     @csrf
                     
-                    <!-- Precompletamos nombre y teléfono con la sesión del cliente -->
-                    <input type="hidden" name="nombre_cliente" value="{{ $user->name }}">
-                    <input type="hidden" name="telefono" value="{{ $user->phone }}">
-                    <input type="hidden" name="email" value="{{ $user->email }}">
+                    <!-- Precompletamos nombre, teléfono y email de solo lectura -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block mb-1.5 text-sm text-gray-400">Tu Nombre</label>
+                            <input type="text" name="nombre_cliente" value="{{ $user->name }}" readonly
+                                   class="w-full bg-[#1f1f1f] border border-gray-800 rounded-xl px-4 py-3 text-gray-400 font-medium focus:outline-none cursor-not-allowed">
+                        </div>
+                        <div>
+                            <label class="block mb-1.5 text-sm text-gray-400">Tu Teléfono</label>
+                            <input type="text" name="telefono" value="{{ $user->phone }}" readonly
+                                   class="w-full bg-[#1f1f1f] border border-gray-800 rounded-xl px-4 py-3 text-gray-400 font-medium focus:outline-none cursor-not-allowed">
+                        </div>
+                        <div>
+                            <label class="block mb-1.5 text-sm text-gray-400">Tu Correo</label>
+                            <input type="email" name="email" value="{{ $user->email }}" readonly
+                                   class="w-full bg-[#1f1f1f] border border-gray-800 rounded-xl px-4 py-3 text-gray-400 font-medium focus:outline-none cursor-not-allowed">
+                        </div>
+                    </div>
 
                     <div>
                         <label class="block mb-1.5 text-sm text-gray-400">Servicio</label>
@@ -227,6 +257,104 @@
                         Confirmar Cita
                     </button>
                 </form>
+            </div>
+        </section>
+
+        <!-- TAB: HISTORIAL -->
+        <section id="content-historial" class="tab-content hidden space-y-6">
+
+            {{-- Resumen en 3 cards --}}
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-[#181818] border border-yellow-900/50 p-5 rounded-2xl flex items-center gap-4">
+                    <div class="p-3 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-2xl flex-shrink-0">⏳</div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Citas Activas</p>
+                        <p class="text-3xl font-extrabold text-yellow-400">{{ $citasActivas->count() }}</p>
+                    </div>
+                </div>
+                <div class="bg-[#181818] border border-green-900/50 p-5 rounded-2xl flex items-center gap-4">
+                    <div class="p-3 rounded-full bg-green-500/10 border border-green-500/20 text-2xl flex-shrink-0">✅</div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Completadas</p>
+                        <p class="text-3xl font-extrabold text-green-400">{{ $citasCompletadas->count() }}</p>
+                    </div>
+                </div>
+                <div class="bg-[#181818] border border-red-900/50 p-5 rounded-2xl flex items-center gap-4">
+                    <div class="p-3 rounded-full bg-red-500/10 border border-red-500/20 text-2xl flex-shrink-0">❌</div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Canceladas</p>
+                        <p class="text-3xl font-extrabold text-red-400">{{ $citasCanceladas->count() }}</p>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Citas activas destacadas --}}
+            @if($citasActivas->count() > 0)
+            <div class="bg-[#181818] border border-yellow-500/30 p-6 rounded-2xl">
+                <h3 class="text-lg font-bold text-yellow-400 mb-4 flex items-center gap-2">
+                    ⚡ Próximas Citas
+                </h3>
+                <div class="space-y-3">
+                    @foreach($citasActivas->sortBy('fecha') as $cita)
+                    <div class="bg-black border border-yellow-500/20 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs px-2 py-0.5 rounded font-mono">
+                                    {{ \Carbon\Carbon::parse($cita->fecha)->format('d/m/Y') }} — {{ date('g:i A', strtotime($cita->hora)) }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-300">Servicio: <span class="text-white font-semibold">{{ $cita->servicio }}</span></p>
+                            <p class="text-sm text-gray-300">Barbero: <span class="text-white font-semibold">{{ $cita->barbero }}</span></p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 self-start sm:self-auto">
+                            {{ $cita->estado }}
+                        </span>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            {{-- Historial completo --}}
+            <div class="bg-[#181818] border border-gray-800 rounded-2xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white">📋 Historial Completo</h3>
+                    <span class="text-xs text-gray-500">{{ $misCitas->count() }} cita(s) en total</span>
+                </div>
+
+                @if($misCitas->count() > 0)
+                <div class="divide-y divide-gray-800/60 max-h-[500px] overflow-y-auto">
+                    @foreach($misCitas as $cita)
+                    @php
+                        $estado = strtolower($cita->estado);
+                        $colorBadge = match(true) {
+                            in_array($estado, ['pendiente']) => 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+                            in_array($estado, ['confirmada']) => 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                            $estado === 'completada' => 'bg-green-500/10 text-green-400 border-green-500/20',
+                            in_array($estado, ['cancelada']) => 'bg-red-500/10 text-red-400 border-red-500/20',
+                            default => 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+                        };
+                    @endphp
+                    <div class="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 hover:bg-white/5 transition">
+                        <div class="space-y-1">
+                            <p class="text-sm font-semibold text-white">{{ $cita->servicio }}</p>
+                            <p class="text-xs text-gray-400">
+                                Barbero: {{ $cita->barbero }} &nbsp;·&nbsp;
+                                {{ \Carbon\Carbon::parse($cita->fecha)->format('d/m/Y') }} a las {{ date('g:i A', strtotime($cita->hora)) }}
+                            </p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $colorBadge }} self-start sm:self-auto">
+                            {{ ucfirst($cita->estado) }}
+                        </span>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <div class="px-6 py-12 text-center text-gray-500">
+                    <span class="text-4xl block mb-3">📅</span>
+                    Aún no tienes citas registradas. ¡Agenda tu primera visita!
+                </div>
+                @endif
             </div>
         </section>
 
@@ -323,6 +451,19 @@
                             .then(response => response.json())
                             .then(data => {
                                 timeSelect.innerHTML = '';
+                                if (data.error) {
+                                    Swal.fire({
+                                        title: 'Horario No Disponible',
+                                        text: data.error,
+                                        icon: 'warning',
+                                        background: '#181818',
+                                        color: '#fff',
+                                        confirmButtonColor: '#eab308'
+                                    });
+                                    timeSelect.innerHTML = `<option value="">Seleccione otra fecha</option>`;
+                                    timeSelect.disabled = true;
+                                    return;
+                                }
                                 if (data.length > 0) {
                                     timeSelect.disabled = false;
                                     
@@ -330,7 +471,7 @@
                                     placeholderOpt.value = '';
                                     placeholderOpt.textContent = 'Seleccione una hora';
                                     timeSelect.appendChild(placeholderOpt);
-
+ 
                                     data.forEach(hora => {
                                         const option = document.createElement('option');
                                         option.value = hora;
@@ -349,8 +490,6 @@
                             })
                             .catch(error => {
                                 console.error('Error cargando horas:', error);
-                                timeSelect.innerHTML = '<option value="">Error al cargar horas</option>';
-                                timeSelect.disabled = true;
                             });
                     } else {
                         timeSelect.innerHTML = '<option value="">Seleccione una fecha primero</option>';

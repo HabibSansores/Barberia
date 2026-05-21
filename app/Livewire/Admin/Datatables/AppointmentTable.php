@@ -2,16 +2,16 @@
 
 namespace App\Livewire\Admin\Datatables;
 
+use App\Models\Cita;
+use Illuminate\Database\Eloquent\Builder;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
-use App\Models\Appointment;
-use Illuminate\Database\Eloquent\Builder;
 
 class AppointmentTable extends DataTableComponent
 {
     public function builder(): Builder
     {
-        return Appointment::query()->with(['client', 'barber', 'service']);
+        return Cita::query()->latest('fecha');
     }
 
     public function configure(): void
@@ -22,27 +22,37 @@ class AppointmentTable extends DataTableComponent
     public function columns(): array
     {
         return [
-            Column::make("Id", "id")
+            Column::make('ID', 'id')
                 ->sortable(),
-            Column::make("Cliente", "client.name")
+
+            Column::make('Cliente', 'nombre_cliente')
                 ->sortable()
                 ->searchable(),
-            Column::make("Barbero", "barber.name")
+
+            Column::make('Teléfono', 'telefono')
+                ->sortable(),
+
+            Column::make('Barbero', 'barbero')
                 ->sortable()
                 ->searchable(),
-            Column::make("Servicio", "service.name")
+
+            Column::make('Servicio', 'servicio')
                 ->sortable(),
-            Column::make("Fecha", "appointment_date")
-                ->sortable(),
-            Column::make("Hora Inicio", "start_time")
-                ->sortable(),
-            Column::make("Estado", "status")
+
+            Column::make('Fecha', 'fecha')
                 ->sortable()
-                ->label(fn($row) => view('admin.appointments.status', ['appointment' => $row])),
-            Column::make("Acciones")
-                ->label(function($row) {
-                    return view('admin.appointments.actions', ['appointment' => $row]);
-                })
+                ->label(fn ($row) => \Carbon\Carbon::parse($row->fecha)->format('d/m/Y')),
+
+            Column::make('Hora', 'hora')
+                ->sortable()
+                ->label(fn ($row) => \Carbon\Carbon::parse($row->hora)->format('g:i A')),
+
+            Column::make('Estado', 'estado')
+                ->sortable()
+                ->label(fn ($row) => view('admin.appointments.status', ['appointment' => $row])),
+
+            Column::make('Acciones')
+                ->label(fn ($row) => view('admin.appointments.actions', ['appointment' => $row])),
         ];
     }
 }

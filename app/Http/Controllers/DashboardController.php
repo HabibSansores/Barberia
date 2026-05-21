@@ -18,41 +18,78 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
+        if ($user->hasRole('Administrador')) {
+            return redirect()->route('admin.dashboard');
+        }
+
         if ($user->hasRole('Barbero')) {
             $barberoInfo = $user->barbero;
             $especialidad = $barberoInfo ? $barberoInfo->especialidad : 'General';
-            
-            // Obtener servicios de la barbería
+
             $services = Service::all();
-            
-            // Citas asignadas a este barbero para el día de hoy
+
+            // Citas de hoy para el barbero
             $today = date('Y-m-d');
             $citas = Cita::where('barbero', $user->name)
                          ->where('fecha', $today)
                          ->orderBy('hora', 'asc')
                          ->get();
 
-            // Lista de todos los barberos (para el formulario de citas del propio barbero)
+            // HISTORIAL: todas las citas del barbero
+            $todasLasCitas = Cita::where('barbero', $user->name)
+                                 ->orderByDesc('fecha')
+                                 ->orderByDesc('hora')
+                                 ->get();
+
             $barberos = User::role('Barbero')->get();
 
-            return view('barbero.dashboard', compact('user', 'especialidad', 'services', 'citas', 'today', 'barberos'));
+            return view('barbero.dashboard', compact(
+                'user', 'especialidad', 'services', 'citas', 'today', 'barberos', 'todasLasCitas'
+            ));
         } 
         
+        if ($user->roles()->count() === 0) {
+            $user->assignRole('Cliente');
+        }
+        
         if ($user->hasRole('Cliente')) {
-            // Servicios informativos
             $services = Service::all();
-            
-            // Barberos disponibles
             $barberos = User::role('Barbero')->with('barbero')->get();
-            
-            return view('cliente.dashboard', compact('user', 'services', 'barberos'));
+
+            // Historial de citas del cliente (por email o nombre)
+            $misCitas = Cita::where('email', $user->email)
+                            ->orWhere('nombre_cliente', $user->name)
+                            ->orderByDesc('fecha')
+                            ->orderByDesc('hora')
+                            ->get();
+
+            // Resumen rápido
+            $citasActivas    = $misCitas->whereIn('estado', ['Pendiente', 'pendiente', 'Confirmada', 'confirmada']);
+            $citasCanceladas = $misCitas->whereIn('estado', ['Cancelada', 'cancelada']);
+            $citasCompletadas = $misCitas->where('estado', 'completada');
+
+            return view('cliente.dashboard', compact(
+                'user', 'services', 'barberos',
+                'misCitas', 'citasActivas', 'citasCanceladas', 'citasCompletadas'
+            ));
         }
 
-        // Si por alguna razón es Administrador u otro rol sin vista definida, cargar panel de cliente por defecto
+        // Si por alguna razón no tiene vista definida, cargar panel de cliente por defecto con todas las variables necesarias
         $services = Service::all();
         $barberos = User::role('Barbero')->with('barbero')->get();
+        $misCitas = Cita::where('email', $user->email)
+                        ->orWhere('nombre_cliente', $user->name)
+                        ->orderByDesc('fecha')
+                        ->orderByDesc('hora')
+                        ->get();
+        $citasActivas    = $misCitas->whereIn('estado', ['Pendiente', 'pendiente', 'Confirmada', 'confirmada']);
+        $citasCanceladas = $misCitas->whereIn('estado', ['Cancelada', 'cancelada']);
+        $citasCompletadas = $misCitas->where('estado', 'completada');
         
-        return view('cliente.dashboard', compact('user', 'services', 'barberos'));
+        return view('cliente.dashboard', compact(
+            'user', 'services', 'barberos',
+            'misCitas', 'citasActivas', 'citasCanceladas', 'citasCompletadas'
+        ));
     }
 
     /**

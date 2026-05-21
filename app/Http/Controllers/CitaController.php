@@ -23,6 +23,21 @@ class CitaController extends Controller
             'hora' => 'required',
         ]);
 
+        // Validar si la cita es para hoy y el horario ya pasó
+        $today = \Carbon\Carbon::now('America/Mexico_City')->toDateString();
+        if ($request->fecha === $today) {
+            $currentHour = \Carbon\Carbon::now('America/Mexico_City')->format('H:i');
+            $selectedHour = date('H:i', strtotime($request->hora));
+            $dayOfWeek = date('w', strtotime($request->fecha));
+            $lastHour = ($dayOfWeek == 6) ? '17:00' : '19:00';
+
+            if ($currentHour >= $lastHour || $selectedHour <= $currentHour) {
+                return redirect()->back()->withInput()->with([
+                    'error_msg' => 'El día de trabajo de la barbería de hoy es de 9am a 7pm. Ese horario ya pasó por el día de hoy. Intente agendar la fecha para el día de mañana.'
+                ]);
+            }
+        }
+
         $cita = \App\Models\Cita::create([
             'nombre_cliente' => $request->nombre_cliente,
             'telefono' => $request->telefono,
@@ -81,10 +96,35 @@ class CitaController extends Controller
         }
 
         // Definir los rangos de horas
-        if ($dayOfWeek == 6) { // Sábado: 10:00 a 17:00 (última cita a las 16:00 o 17:00? El usuario dijo "de 10:00 a 17:00 horas", vamos a poner hasta las 17:00)
+        if ($dayOfWeek == 6) { // Sábado: 10:00 a 17:00
             $totalSlots = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
         } else { // Lunes a Viernes: 09:00 a 19:00
             $totalSlots = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
+        }
+
+        // Si el usuario selecciona "hoy", filtramos horas pasadas
+        $today = \Carbon\Carbon::now('America/Mexico_City')->toDateString();
+        if ($fecha === $today) {
+            $currentHour = \Carbon\Carbon::now('America/Mexico_City')->format('H:i');
+            $lastHour = ($dayOfWeek == 6) ? '17:00' : '19:00';
+            
+            if ($currentHour >= $lastHour) {
+                return response()->json([
+                    'error' => 'El día de trabajo de la barbería de hoy es de 9am a 7pm. Ese horario ya pasó por el día de hoy. Intente agendar la fecha para el día de mañana.'
+                ]);
+            }
+            
+            // Solo dejamos las horas que son estrictamente mayores que la hora actual
+            $totalSlots = array_values(array_filter($totalSlots, function ($slot) use ($currentHour) {
+                return $slot > $currentHour;
+            }));
+
+            // Si todos los slots de hoy ya pasaron
+            if (empty($totalSlots)) {
+                return response()->json([
+                    'error' => 'El día de trabajo de la barbería de hoy es de 9am a 7pm. Ese horario ya pasó por el día de hoy. Intente agendar la fecha para el día de mañana.'
+                ]);
+            }
         }
 
         // Obtener las horas ya ocupadas para esta fecha
@@ -101,5 +141,24 @@ class CitaController extends Controller
         }));
 
         return response()->json($availableSlots);
+    }
+
+    public function buscarClienteByEmail(Request $request)
+    {
+        $email = $request->query('email');
+        if (!$email) {
+            return response()->json(['success' => false, 'message' => 'Email no proporcionado.']);
+        }
+
+        $user = \App\Models\User::where('email', $email)->first();
+        if ($user) {
+            return response()->json([
+                'success' => true,
+                'nombre' => $user->name,
+                'telefono' => $user->phone
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Cliente no encontrado.']);
     }
 }

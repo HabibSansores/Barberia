@@ -34,15 +34,10 @@
                     <x-wire-input label="Confirmar contraseña" name="password_confirmation" type="password"
                         placeholder="Repita la contraseña" required autocomplete="new-password"></x-wire-input>
 
-                    <x-wire-input label="Numero de ID" name="id_number" placeholder="Ej. 123456789" autocomplete="off"
-                        required inputmode="numeric" :value="old('id_number')"></x-wire-input>
-
                     <x-wire-input label="Telefono" name="phone" placeholder="Ej. 9999999999" autocomplete="tel"
                         required inputmode="tel" :value="old('phone')"></x-wire-input>
                 </div>
 
-                <x-wire-input name="address" label="Direccion" required :value="old('address')"
-                    placeholder="Ej. Calle 123 #432" autocomplete="street-address"></x-wire-input>
 
                 <div class=space-y-1>
                     <x-wire-native-select name="role_id" label="Rol" required>
