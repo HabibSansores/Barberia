@@ -13,8 +13,22 @@
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-8">
                 
                 @if(session('success'))
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
-                        <span class="block sm:inline">{{ session('success') }}</span>
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded relative mb-6 shadow-sm" role="alert">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <span class="block font-semibold text-green-800">{{ session('success') }}</span>
+                            </div>
+                            @if(session('whatsapp_url'))
+                                <div>
+                                    <a href="{{ session('whatsapp_url') }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2">
+                                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.458L0 24zm5.835-3.3c1.673.993 3.328 1.503 4.887 1.503 5.485 0 9.948-4.414 9.951-9.84.002-2.628-1.02-5.1-2.877-6.958C16.002 3.55 13.541 2.529 10.93 2.528 5.446 2.528 1.054 6.945 1.05 12.37c-.001 1.745.474 3.447 1.378 4.969L1.45 22.062l4.442-1.362zM18.175 14.9c-.33-.165-1.951-.963-2.25-1.072-.3-.11-.519-.165-.738.165-.219.33-.847 1.072-1.039 1.29-.192.219-.384.246-.714.081-.33-.165-1.393-.513-2.653-1.637-1.033-.92-1.73-2.057-1.933-2.404-.203-.347-.022-.534.143-.699.148-.148.33-.384.495-.577.165-.192.22-.33.33-.549.11-.219.055-.411-.027-.577-.082-.165-.738-1.782-1.011-2.44-.267-.643-.538-.553-.738-.563-.19-.01-.41-.01-.629-.01-.219 0-.575.082-.876.411-.3.33-1.15 1.124-1.15 2.741 0 1.617 1.178 3.181 1.339 3.4.162.22 2.316 3.537 5.611 4.96.783.338 1.395.54 1.872.693.787.25 1.5.215 2.065.13.629-.094 1.951-.797 2.226-1.566.275-.769.275-1.428.192-1.566-.083-.138-.302-.22-.632-.385z"/>
+                                        </svg>
+                                        Enviar WhatsApp
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 @endif
 
